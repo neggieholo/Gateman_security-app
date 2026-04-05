@@ -12,29 +12,23 @@ export interface SecurityUser {
   id: string;
   name: string;
   email: string;
-  password?: string;
-  isTemp: boolean;
-  is_on_duty: boolean;
-  created_at: string | null;
-
-  // Fields for Temp Tenants
-  rejection_message?: {
-    type: "decline" | "block";
-    estate: string;
-    message: string;
-  } | null;
-
-  // Fields for Permanent Tenants
-  estate_id?: string;
-  unit?: string;
-  block?: string;
-  avatar?: string | null;
-  id_type?: string;
-  id_front_url?: string;
-  id_back_url?: string;
-  showWelcome?: boolean;
+  phone?: string;
+  avatar?: string;
+  estate_id: string;
   estate_name?: string;
   push_token?: string;
+  is_on_duty: boolean;
+  showWelcome?: boolean;
+  last_checkin?: string;
+  last_checkout?: string;
+  checkin_location?: string;
+  checkout_location?: string;
+  last_known_location?: string;
+  last_location_time?: string;
+  role: 'SECURITY';
+  id_type?: string;       
+  id_front_url?: string;
+  id_back_url?: string;
 }
 
 export interface tempNotification {

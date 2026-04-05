@@ -339,7 +339,7 @@ export const fetchGatePasses = async (): Promise<Invitation[]> => {
     }
     
     const data = await res.json();
-    console.log("Fetched Invitations:", data);
+    // console.log("Fetched Invitations:", data);
     return data;
   } catch (error) {
     console.error("Fetch Error:", error);
@@ -371,7 +371,7 @@ export const logActivityApi = async (inviteId: string, action: 'check_in' | 'che
 
 export const changePassword = async (currentPassword: string, newPassword: string, role: string) => {
   try {
-    const response = await fetch(`${BASE_URL}/api/change-password`, {
+    const response = await fetch(`${BASE_URL}/change-password`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ currentPassword, newPassword, role }),
@@ -379,5 +379,27 @@ export const changePassword = async (currentPassword: string, newPassword: strin
     return await response.json();
   } catch (err) {
     return { success: false, message: "Network error" };
+  }
+};
+
+export const updateSecurityLocation = async (latitude: number, longitude: number) => {
+  try {
+    const res = await fetch(`${BASE_URL}/security/update-location`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ latitude, longitude }),
+      credentials: "include", 
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      return { success: false, message: data.error || "Location sync failed" };
+    }
+
+    return { success: true };
+  } catch (err) {
+    console.error("Location Sync Error:", err);
+    return { success: false, message: "Network error during location sync" };
   }
 };

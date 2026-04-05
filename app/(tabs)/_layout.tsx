@@ -4,14 +4,8 @@ import { Ionicons } from "@expo/vector-icons";
 import CookieManager from "@react-native-cookies/cookies";
 import auth from "@react-native-firebase/auth";
 import { Tabs, useRouter } from "expo-router";
-import { Bell } from "lucide-react-native";
 import { useState } from "react";
-import {
-  ActivityIndicator,
-  Text,
-  TouchableOpacity,
-  View
-} from "react-native";
+import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 export default function SecurityTabsLayout() {
@@ -40,6 +34,33 @@ export default function SecurityTabsLayout() {
     }
   };
 
+  // Define the icons as a reusable component for clarity
+  const DashboardHeaderRight = () => (
+    <View className="flex-row gap-7 m-2">
+      <TouchableOpacity onPress={() => router.push("/NotificationsPage")}>
+        <Ionicons name="notifications-outline" size={24} color="#FFFFFF" />
+        {badgeCount > 0 && (
+          <View
+            className="absolute -top-1 -right-1 bg-red-500 rounded-full flex items-center justify-center border-2 border-[#2563eb]"
+            style={{ minWidth: 18, height: 18 }}
+          >
+            <Text className="text-white text-[9px] font-bold">
+              {badgeCount}
+            </Text>
+          </View>
+        )}
+      </TouchableOpacity>
+
+      <TouchableOpacity onPress={handleLogout} disabled={loggingOut}>
+        {loggingOut ? (
+          <ActivityIndicator size="small" color="#FFFFFF" />
+        ) : (
+          <Ionicons name="log-out-outline" size={24} color="#FFFFFF" />
+        )}
+      </TouchableOpacity>
+    </View>
+  );
+
   return (
     <SafeAreaProvider>
       <Tabs
@@ -52,37 +73,7 @@ export default function SecurityTabsLayout() {
           tabBarStyle: { backgroundColor: "#2563EB", borderTopWidth: 0 },
           tabBarActiveTintColor: "#FFFFFF",
           tabBarInactiveTintColor: "#BFDBFE",
-          // The magic happens here: Both icons in the header
-          headerRight: () => (
-            <View className="flex-row gap-7 m-2">
-              <TouchableOpacity
-                onPress={() => router.push("/NotificationsPage")}
-              >
-                <Ionicons name="notifications-outline" size={24} color="#FFFFFF" />
-                {badgeCount > 0 && (
-                  <View
-                    className="absolute -top-1 -right-1 bg-red-500 rounded-full flex items-center justify-center border-2 border-[#2563eb]"
-                    style={{ minWidth: 18, height: 18 }}
-                  >
-                    <Text className="text-white text-[9px] font-bold">
-                      {badgeCount}
-                    </Text>
-                  </View>
-                )}
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                onPress={handleLogout}
-                disabled={loggingOut}
-              >
-                {loggingOut ? (
-                  <ActivityIndicator size="small" color="#FFFFFF" />
-                ) : (
-                  <Ionicons name="log-out-outline" size={24} color="#FFFFFF" />
-                )}
-              </TouchableOpacity>
-            </View>
-          ),
+          // REMOVED headerRight from here so it's not global
         }}
       >
         <Tabs.Screen
@@ -98,6 +89,8 @@ export default function SecurityTabsLayout() {
                 </Text>
               </View>
             ),
+            // ATTACHED headerRight specifically to this screen
+            headerRight: () => <DashboardHeaderRight />,
             tabBarLabel: "Dashboard",
             tabBarIcon: ({ color, size }) => (
               <Ionicons name="grid" size={size} color={color} />

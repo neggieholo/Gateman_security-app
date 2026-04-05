@@ -1,6 +1,6 @@
 import * as Location from "expo-location"; // Best for Cross-platform iOS/Android
 import { useRouter } from "expo-router";
-import { Bell, LogIn, LogOut, ShieldCheck } from "lucide-react-native";
+import { Bell, LogIn, LogOut, MapPin, ShieldCheck } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -11,7 +11,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { toggleSecurityStatus } from "../services/api"; // Adjust path
+import { toggleSecurityStatus, updateSecurityLocation } from "../services/api"; // Adjust path
 import { useUser } from "../UserContext";
 
 export default function SecurityDashboard() {
@@ -22,6 +22,7 @@ export default function SecurityDashboard() {
   const [loading, setLoading] = useState(false);
   const [isCheckedIn, setIsCheckedIn] = useState(user?.is_on_duty || false);
   const [showBanner, setShowBanner] = React.useState(false);
+  const [updatingLoc, setUpdatingLoc] = useState(false);
 
   useEffect(() => {
     const welcomeShown = () => {
@@ -102,6 +103,34 @@ export default function SecurityDashboard() {
     }
   };
 
+  const handleSendLocation = async () => {
+    setUpdatingLoc(true);
+    try {
+      // 1. Get coordinates using your existing getLocation() logic
+      const location = await getLocation();
+      if (!location) return;
+
+      // 2. Call the new API service
+      const result = await updateSecurityLocation(
+        location.latitude,
+        location.longitude,
+      );
+
+      if (result.success) {
+        Alert.alert(
+          "Location Synced",
+          "Your current position has been updated on the admin dashboard.",
+        );
+      } else {
+        Alert.alert("Sync Failed", result.message);
+      }
+    } catch (err) {
+      Alert.alert("Error", "Failed to reach the server.");
+    } finally {
+      setUpdatingLoc(false);
+    }
+  };
+
   // --- Handle No Estate Joined View ---
   if (!user?.estate_id) {
     return (
@@ -166,6 +195,7 @@ export default function SecurityDashboard() {
 
         <TextInput
           placeholder="Enter 10-digit Code"
+          placeholderTextColor={'#9CA3AF'}
           value={checkInCode}
           onChangeText={(val) =>
             setCheckInCode(val.replace(/[^0-9]/g, "").slice(0, 10))
@@ -201,6 +231,25 @@ export default function SecurityDashboard() {
             </>
           )}
         </TouchableOpacity>
+
+        {isCheckedIn && (
+          <TouchableOpacity
+            onPress={handleSendLocation}
+            disabled={updatingLoc}
+            className="w-full h-14 mt-4 rounded-2xl border border-indigo-100 bg-indigo-50 flex-row items-center justify-center active:bg-indigo-100"
+          >
+            {updatingLoc ? (
+              <ActivityIndicator color="#4f46e5" />
+            ) : (
+              <>
+                <MapPin color="#4f46e5" size={20} />
+                <Text className="text-indigo-600 font-bold ml-2 text-base">
+                  Send Live Location
+                </Text>
+              </>
+            )}
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   );
