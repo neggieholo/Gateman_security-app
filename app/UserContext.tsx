@@ -8,10 +8,14 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { Platform } from "react-native";
+import { Alert, Platform } from "react-native";
 import { io, Socket } from "socket.io-client";
-import { getMyApplicationStatus } from "./services/api";
-import { SecurityUser, tempNotification } from "./services/interfaces";
+import { fetchNotifications, getMyApplicationStatus } from "./services/api";
+import {
+  notification,
+  SecurityUser,
+  tempNotification,
+} from "./services/interfaces";
 
 interface UserContextType {
   user: Partial<SecurityUser> | null;
@@ -20,13 +24,16 @@ interface UserContextType {
   setSessionId?: (sessionId: string) => void;
   tempnotification: tempNotification | null;
   setTempnotification: (notification: tempNotification | null) => void;
+  notifications: notification[];
+  setNotifications: (notifications: notification[]) => void;
   triggerRefresh: () => void;
   badgeCount: number;
   setBadgeCount: (count: number) => void;
   pushToken?: string | null;
   setPushToken: (token: string | null) => void;
   socket: Socket | null;
-  isConnected: boolean; 
+  isConnected: boolean;
+  loadingNotifications: boolean;
 }
 
 export const UserContext = createContext<UserContextType>({
@@ -36,6 +43,8 @@ export const UserContext = createContext<UserContextType>({
   setSessionId: () => {},
   tempnotification: null,
   setTempnotification: () => {},
+  notifications: [],
+  setNotifications: () => {},
   triggerRefresh: () => {},
   badgeCount: 0,
   setBadgeCount: () => {},
@@ -43,13 +52,16 @@ export const UserContext = createContext<UserContextType>({
   setPushToken: () => {},
   socket: null,
   isConnected: false,
+  loadingNotifications: false,
 });
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<Partial<SecurityUser> | null>(null);
   const [tempnotification, setTempnotification] =
     useState<tempNotification | null>(null);
+  const [notifications, setNotifications] = useState<notification[]>([]);
   const [refreshTrigger, setRefreshTrigger] = useState<boolean>(false);
+  const [loadingNotifications, setLoadingNotifications] = useState(false);
   const [badgeCount, setBadgeCount] = useState<number>(0);
   const [sessionId, setSessionId] = useState<string>("");
   const [isConnected, setIsConnected] = useState<boolean>(false);
@@ -87,11 +99,23 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       setTempnotification(data);
       setBadgeCount(1);
     });
+    
+    newSocket.on("new_notification", (newNotif: notification) => {
+    console.log("🚀 Real-time notification received:", newNotif);
+    setNotifications((prev) => {
+      const exists = prev.find((n) => n.id === newNotif.id);
+      if (exists) return prev;
+      return [newNotif, ...prev];
+    });
+
+    setBadgeCount((prev) => prev + 1);
+  });
 
     socketRef.current = newSocket;
 
     return () => {
       newSocket.off("status_update");
+      newSocket.off("new_notification");
       newSocket.close();
       socketRef.current = null;
     };
@@ -99,25 +123,37 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     const getStatus = async () => {
-      if (user?.isTemp) {
-        const result = await getMyApplicationStatus();
+      try {
+        if (user?.isTemp) {
+          const result = await getMyApplicationStatus();
 
-        if (result && result.notification) {
-          setTempnotification(result.notification);
-
-          // 🚀 Only increase badge if notification exists AND isRead is false
-          if (result.isRead === false) {
-            setBadgeCount(1);
+          if (result && result.notification) {
+            setTempnotification(result.notification);
+            setBadgeCount(result.isRead === false ? 1 : 0);
           } else {
+            setTempnotification(null);
             setBadgeCount(0);
           }
-        } else {
-          setTempnotification(null);
-          setBadgeCount(0);
         }
-      } else {
-        setTempnotification(null);
-        setBadgeCount(0);
+
+        if (user?.estate_id) {
+          setLoadingNotifications(true);
+          const result = await fetchNotifications();
+          if (result.success) {
+            setNotifications(result.list);
+
+            const lastRead = new Date(result.lastReadAt || "1970-01-01");
+            const unreadCount = result.list.filter(
+              (n: any) => new Date(n.created_at) > lastRead,
+            ).length;
+
+            setBadgeCount(unreadCount);
+          }
+        }
+      } catch (error) {
+        Alert.alert("Failed to fetch notifications");
+      } finally {
+        setLoadingNotifications(false);
       }
     };
 
@@ -169,7 +205,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 
         if (data.type === "notification") {
           router.push({
-            pathname: user?.id && isConnected ? "./NotificationsPage" : "/",
+            pathname: user?.id && isConnected ? "/NotificationsPage" : "/",
           });
         }
       });
@@ -187,6 +223,8 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         setUser,
         tempnotification,
         setTempnotification,
+        notifications,
+        setNotifications,
         triggerRefresh,
         badgeCount,
         setBadgeCount,
@@ -196,6 +234,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         setPushToken,
         socket: socketRef.current,
         isConnected,
+        loadingNotifications,
       }}
     >
       {children}

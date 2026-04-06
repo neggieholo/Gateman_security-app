@@ -86,12 +86,19 @@ export default function GatePassesView() {
     const checkinDateStr = toLocalDateStr(invite.actual_checkin_date);
     const checkoutDateStr = toLocalDateStr(invite.actual_checkout_date);
 
-    // console.log(`Sync Check - Local Today: ${todayStr}, DB In: ${checkinDateStr}`);
-
+    // Setup Times for Today
+    const [startH, startM] = invite.start_time.split(":");
     const [endH, endM] = invite.end_time.split(":");
+
+    const todayStart = new Date();
+    todayStart.setHours(parseInt(startH), parseInt(startM), 0, 0);
+
+    const todayEnd = new Date();
+    todayEnd.setHours(parseInt(endH), parseInt(endM), 0, 0);
+
+    // 1. GLOBAL EXPIRY (Check if the entire multi-entry period is over)
     const overallExpiry = new Date(invite.end_date);
     overallExpiry.setHours(parseInt(endH), parseInt(endM), 0);
-
     if (now > overallExpiry) {
       return {
         label: "EXPIRED",
@@ -100,6 +107,7 @@ export default function GatePassesView() {
       };
     }
 
+    // 2. EXCLUSION CHECK
     if (invite.excluded_dates?.includes(todayStr)) {
       return {
         label: "NOT ALLOWED TODAY",
@@ -108,20 +116,25 @@ export default function GatePassesView() {
       };
     }
 
+    // 3. OVERSTAYED FROM A PREVIOUS DAY ("Zombie" check-in)
+    if (checkinDateStr && checkinDateStr < todayStr) {
+      if (!checkoutDateStr || checkoutDateStr < checkinDateStr) {
+        return {
+          label: "OVERSTAYED (PAST)",
+          container: "bg-red-100",
+          text: "text-red-700",
+        };
+      }
+    }
+
     const isCheckedInToday = checkinDateStr === todayStr;
     const isCheckedOutToday = checkoutDateStr === todayStr;
 
-    if (
-      (invite.status === "checked_in" || isCheckedInToday) &&
-      !isCheckedOutToday
-    ) {
-      const [h, m] = invite.end_time.split(":");
-      const todayCutoff = new Date();
-      todayCutoff.setHours(parseInt(h), parseInt(m), 0);
-
-      if (now > todayCutoff) {
+    // 4. LOGIC FOR GUESTS CURRENTLY INSIDE TODAY
+    if (isCheckedInToday && !isCheckedOutToday) {
+      if (now > todayEnd) {
         return {
-          label: "OVERSTAYED",
+          label: "OVERSTAYED TODAY",
           container: "bg-red-100",
           text: "text-red-700",
         };
@@ -133,6 +146,7 @@ export default function GatePassesView() {
       };
     }
 
+    // 5. DEPARTED TODAY
     if (isCheckedOutToday) {
       return {
         label: "DEPARTED TODAY",
@@ -141,14 +155,33 @@ export default function GatePassesView() {
       };
     }
 
+    // 6. EXPIRED TODAY (Window closed, no check-in occurred)
+    if (!isCheckedInToday && now > todayEnd) {
+      return {
+        label: "EXPIRED TODAY",
+        container: "bg-rose-50",
+        text: "text-rose-400",
+      };
+    }
+
+    // 7. NOT ARRIVED TODAY (Within daily hours)
     const startDate = toLocalDateStr(invite.start_date);
     const endDate = toLocalDateStr(invite.end_date);
 
     if (startDate && endDate && todayStr >= startDate && todayStr <= endDate) {
+      // If it's too early for the daily window
+      if (now < todayStart) {
+        return {
+          label: "NOT ARRIVED TODAY",
+          container: "bg-slate-100",
+          text: "text-slate-500",
+        };
+      }
+      // If it's currently within the window
       return {
-        label: "NOT ARRIVED TODAY",
-        container: "bg-slate-100",
-        text: "text-slate-500",
+        label: "READY FOR ENTRY",
+        container: "bg-indigo-100",
+        text: "text-indigo-700",
       };
     }
 
@@ -162,8 +195,9 @@ export default function GatePassesView() {
   const getStatusDetails = (
     status: string,
     isExpired: boolean,
-    startDate: string,
+    startDate: string, // Added this parameter
     isCancelled: boolean,
+    startTime: string,
   ) => {
     if (isCancelled) {
       return {
@@ -175,12 +209,10 @@ export default function GatePassesView() {
 
     const now = new Date();
     const start = new Date(startDate);
-
-    // Reset hours to 0 for a clean "day-by-day" comparison
-    const today = new Date(now.setHours(0, 0, 0, 0));
+    const today = new Date(new Date().setHours(0, 0, 0, 0));
     const startDay = new Date(start.setHours(0, 0, 0, 0));
 
-    // 1. Check if the invitation hasn't started yet
+    // 1. Check if the invitation hasn't started yet (Future date)
     if (status === "pending" && today < startDay) {
       return {
         label: "UPCOMING",
@@ -198,14 +230,30 @@ export default function GatePassesView() {
       };
     }
 
-    // 3. Normal Status Switch
-    switch (status) {
-      case "pending":
+    // 3. Logic for "Pending" invites that are valid TODAY
+    if (status === "pending") {
+      const [startH, startM] = startTime.split(":");
+      const todayStartTime = new Date();
+      todayStartTime.setHours(parseInt(startH), parseInt(startM), 0, 0);
+
+      // If today is the day and current time is >= start time
+      if (now >= todayStartTime) {
         return {
-          label: "NOT ARRIVED",
-          container: "bg-slate-100",
-          text: "text-slate-600",
+          label: "READY FOR ENTRY",
+          container: "bg-indigo-100",
+          text: "text-indigo-700",
         };
+      }
+
+      return {
+        label: "NOT ARRIVED",
+        container: "bg-slate-100",
+        text: "text-slate-600",
+      };
+    }
+
+    // 4. Normal Status Switch for non-pending
+    switch (status) {
       case "checked_in":
         return {
           label: "INSIDE",
@@ -314,13 +362,15 @@ export default function GatePassesView() {
           isExpired,
           invite.start_date,
           invite.is_cancelled,
+          invite.start_time
         );
 
     const canAction = [
       "NOT ARRIVED",
-      "NOT ARRIVED TODAY",
+      "NOT ARRIVED TODAY", 
+      "READY FOR ENTRY",
       "INSIDE",
-      "ACTIVE PASS",
+      "ARRIVED TODAY",
     ].includes(status.label);
 
     return (
@@ -511,6 +561,7 @@ export default function GatePassesView() {
                   isPastTime(selectedInvite.end_date, selectedInvite.end_time),
                   selectedInvite.start_date,
                   selectedInvite.is_cancelled,
+                  selectedInvite.start_time
                 )
             : null
         }

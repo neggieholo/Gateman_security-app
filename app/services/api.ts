@@ -1,4 +1,4 @@
-import { Estate, Invitation, tempNotification } from "./interfaces";
+import { Estate, FetchNotificationsResponse, Invitation, tempNotification } from "./interfaces";
 import Constants from "expo-constants";
 import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
@@ -110,7 +110,7 @@ export default async function registerForPushNotificationsAsync() {
 
 export const updatePushTokenApi = async (token: string) => {
   try {
-    const response = await fetch(`${BASE_URL}/admin/update-push-token`, {
+    const response = await fetch(`${BASE_URL}/security/update-push-token`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ pushToken: token }),
@@ -204,12 +204,14 @@ export const getMyApplicationStatus = async () => {
     const data = await res.json();
 
     if (data.success) {
+      console.log('Notification Data:', data)
       let standardized: tempNotification | null = null;
 
       // 1. Handle Pending Request
       if (data.activeRequest) {
         standardized = {
           from: "Gateman",
+          type: "pending",
           message: `Your join request to ${data.activeRequest.estate_name} is still pending`,
           reason: "Please wait for admin approval.",
         };
@@ -222,11 +224,13 @@ export const getMyApplicationStatus = async () => {
             ? JSON.parse(data.feedback) 
             : data.feedback;
 
+          const type = parsedFeedback.type;
+
           standardized = {
             from: parsedFeedback.estate || "Estate Admin",
-            message: parsedFeedback.type === "decline" 
-              ? "Your request was declined" 
-              : "You have been restricted",
+            type: type,
+            message: type === "decline" 
+              ? "Your request was declined" : type === "approve" ? 'You have been approved': "You have been restricted",
             reason: parsedFeedback.message || "No specific reason provided.",
           };
         } catch (e) {
@@ -234,6 +238,7 @@ export const getMyApplicationStatus = async () => {
         }
       }
 
+      console.log('Standardized:',standardized)
       return {
         success: true,
         notification: standardized,
@@ -401,5 +406,44 @@ export const updateSecurityLocation = async (latitude: number, longitude: number
   } catch (err) {
     console.error("Location Sync Error:", err);
     return { success: false, message: "Network error during location sync" };
+  }
+};
+
+export const fetchNotifications = async () : Promise<FetchNotificationsResponse> => {
+  try {
+    const res = await fetch(`${BASE_URL}/notifications`, {
+      method: "GET",
+      credentials: "include",
+    });
+    const data = await res.json();
+    return data
+  } catch (err) {
+    return { success: false, list: [], lastReadAt: '1970-01-01' };
+  }
+};
+
+export const markAllAsReadApi = async () => {
+  try {
+    const res = await fetch(`${BASE_URL}/notifications/read-all`, {
+      method: "PUT",
+      credentials: "include",
+    });
+    return await res.json();
+  } catch (err) {
+    return { success: false };
+  }
+};
+
+export const deleteNotificationApi = async (id: string) => {
+  try {
+    const res = await fetch(`${BASE_URL}/notifications/${id}`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+    });
+    return await res.json();
+  } catch (err) {
+    console.error("Delete API Error:", err);
+    return { success: false };
   }
 };

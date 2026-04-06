@@ -25,18 +25,38 @@ export interface SecurityUser {
   checkout_location?: string;
   last_known_location?: string;
   last_location_time?: string;
+  isTemp?: boolean;
   role: 'SECURITY';
   id_type?: string;       
   id_front_url?: string;
   id_back_url?: string;
+  last_notification_read_at: string;
 }
 
 export interface tempNotification {
   from: string;
+  type: string;
   message: string;
   reason: string;
 }
 
+export interface notification {
+  id: string;              
+  estate_id: number;  
+  user_id: number | null;  
+  recipient_role: 'tenant' | 'security' | 'admin';
+  title: string;
+  message: string;
+  type: 'general' | 'emergency' | 'entry' | 'invite' | 'announcement';
+  created_at: string; 
+  is_deleted: boolean;
+}
+
+export interface FetchNotificationsResponse {
+  success: boolean;
+  list: notification[];
+  lastReadAt: string;   
+}
 
 export type IDType = 'National ID' | 'Drivers License' | 'Voters Card' | 'International Passport';
 
