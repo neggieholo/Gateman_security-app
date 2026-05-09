@@ -1,4 +1,4 @@
-import { Mail, MapPin, Phone, Users, X } from "lucide-react-native";
+import { Mail, MapPin, Phone, ShieldCheck, Users, X } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -13,6 +13,8 @@ import {
   View,
 } from "react-native";
 import { getSecurityColleagues } from "../services/api";
+import { useUser } from "../UserContext";
+import { router } from "expo-router";
 
 const { width, height } = Dimensions.get("window");
 
@@ -28,6 +30,7 @@ interface Guard {
 }
 
 export default function SecurityColleagues() {
+  const {user} = useUser()
   const [allGuards, setAllGuards] = useState<Guard[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -126,7 +129,7 @@ export default function SecurityColleagues() {
 
           <View className="flex-1 pl-2 border-l border-gray-100">
             <Text className="text-[10px] uppercase tracking-widest text-gray-400 font-bold">
-              Current Sector
+              Last Known Location
             </Text>
             <View className="flex-row items-center mt-1">
               <MapPin size={12} color="#6366f1" />
@@ -134,7 +137,7 @@ export default function SecurityColleagues() {
                 className="text-gray-700 text-xs ml-1 font-semibold"
                 numberOfLines={1}
               >
-                {item.last_known_location || "Patrolling"}
+                {item.last_known_location || "Unknown"}
               </Text>
             </View>
           </View>
@@ -143,8 +146,27 @@ export default function SecurityColleagues() {
     </View>
   );
 
+  if (!user?.estate_id) {
+      return (
+        <View className="flex-1 justify-center items-center p-6 bg-gray-50">
+          <View className="bg-white p-8 rounded-3xl shadow-sm items-center border border-gray-100">
+            <ShieldCheck size={60} color="#4f46e5" />
+            <Text className="text-xl font-bold text-gray-900 mt-4 text-center">
+              Security Access Restricted
+            </Text>
+            <TouchableOpacity
+              className="bg-indigo-600 py-4 px-10 rounded-2xl shadow-md mt-6"
+              onPress={() => router.push("/JoinRequest" as any)}
+            >
+              <Text className="text-white font-bold text-lg">Join an Estate</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      );
+    }
+
   return (
-    <View className="flex-1 bg-gray-50 p-4 pt-12">
+    <View className="flex-1 bg-gray-50 p-4">
       <View className="flex-row justify-between items-center mb-6">
         <View>
           <Text className="text-2xl font-bold text-gray-900">

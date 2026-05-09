@@ -10,7 +10,7 @@ import {
   Platform, 
   ScrollView 
 } from 'react-native';
-import { changePassword } from '../services/api';
+import { changePassword } from './services/api';
 
 export default function ChangePasswordScreen() {
   const [loading, setLoading] = useState(false);

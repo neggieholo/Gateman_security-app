@@ -53,17 +53,6 @@ export default function LoginScreen() {
     setError("");
     console.log("Login details:", email, password);
     try {
-      try {
-        const pushTokenResponse = await registerForPushNotificationsAsync();
-        if (pushTokenResponse) {
-          console.log("📱 Push token obtained:", pushTokenResponse);
-          setPushToken(pushTokenResponse);
-          await updatePushTokenApi(pushTokenResponse);
-        }
-      } catch (pushErr) {
-        console.warn("Push token failed, continuing login:", pushErr);
-      }
-
       await CookieManager.clearAll();
       console.log("🧹 Cookie Jar Wiped!");
       const response = await postLogin(email, password);
@@ -79,6 +68,16 @@ export default function LoginScreen() {
           );
         }
         setUser(response.user);
+        try {
+          const pushTokenResponse = await registerForPushNotificationsAsync();
+          if (pushTokenResponse) {
+            console.log("📱 Push token obtained:", pushTokenResponse);
+            setPushToken(pushTokenResponse);
+            await updatePushTokenApi(pushTokenResponse);
+          }
+        } catch (pushErr) {
+          console.warn("Push token failed, continuing login:", pushErr);
+        }
         console.log("Login successful, session ID:", response.sessionId);
         setSessionId?.(response.sessionId);
         router.replace("/dashboard" as any);
@@ -111,7 +110,6 @@ export default function LoginScreen() {
       return;
     }
 
-    // 2. Phone Validation using the Ref
     const checkValid = phoneInputRef.current?.isValidNumber(phone);
 
     if (!phone || !checkValid) {
@@ -347,37 +345,31 @@ export default function LoginScreen() {
                       onChangeText={setPhone}
                       onChangeFormattedText={setFormattedPhone}
                       placeholder="Phone Number"
-                      // Match your FormInput's dark gray and border radius
                       containerStyle={{
                         width: "100%",
                         height: 40,
                         borderRadius: 5,
-                        backgroundColor: "rgba(0,0,0,0.7)", // Dark gray (Gray-700)
+                        backgroundColor: "rgba(0,0,0,0.7)",
                         borderWidth: 1,
-                        borderColor: "#4B5563", // Subtle border (Gray-600)
+                        borderColor: "#4B5563",
                         overflow: "hidden",
                       }}
-                      // The area where the actual number is typed
                       textContainerStyle={{
                         backgroundColor: "transparent",
                         paddingVertical: 0,
                       }}
-                      // The text the user types (White)
                       textInputStyle={{
                         color: "#FFFFFF",
                         fontSize: 16,
                         height: 55,
                       }}
-                      // The country code text (+234)
                       codeTextStyle={{
                         color: "#FFFFFF",
                         fontSize: 16,
                       }}
-                      // The placeholder text color
                       textInputProps={{
-                        placeholderTextColor: "rgba(255,255,255,0.6)", // Light gray placeholder (Gray-400)
+                        placeholderTextColor: "rgba(255,255,255,0.6)",
                       }}
-                      // Ensure the country picker dropdown matches the dark theme
                       withDarkTheme
                     />
                   </View>

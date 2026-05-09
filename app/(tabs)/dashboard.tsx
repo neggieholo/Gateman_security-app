@@ -1,17 +1,23 @@
 import * as Location from "expo-location"; // Best for Cross-platform iOS/Android
 import { useRouter } from "expo-router";
 import { Bell, LogIn, LogOut, MapPin, ShieldCheck } from "lucide-react-native";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
   Modal,
+  RefreshControl,
+  ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
-import { toggleSecurityStatus, updateSecurityLocation } from "../services/api"; // Adjust path
+import {
+  getDashboardStats,
+  toggleSecurityStatus,
+  updateSecurityLocation,
+} from "../services/api"; // Adjust path
 import { useUser } from "../UserContext";
 
 export default function SecurityDashboard() {
@@ -23,6 +29,14 @@ export default function SecurityDashboard() {
   const [isCheckedIn, setIsCheckedIn] = useState(user?.is_on_duty || false);
   const [showBanner, setShowBanner] = React.useState(false);
   const [updatingLoc, setUpdatingLoc] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState<boolean>(false);
+  const [stats, setStats] = useState({
+    total_expected: 0,
+    checked_in: 0,
+    checked_out: 0,
+    overstayed: 0,
+    active_events: 0,
+  });
 
   useEffect(() => {
     const welcomeShown = () => {
@@ -34,6 +48,32 @@ export default function SecurityDashboard() {
     };
     welcomeShown();
   }, [user]);
+
+  const fetchStats = async () => {
+    try {
+      const data = await getDashboardStats();
+      if (data.success) setStats(data.stats);
+    } catch (err) {
+      console.log("Stats fetch error");
+    }
+  };
+
+  useEffect(() => {
+    fetchStats();
+  }, [user, refreshTrigger]);
+
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      setRefreshTrigger((prev) => !prev);
+    } catch (error) {
+      console.error("Refresh failed:", error);
+    } finally {
+      setRefreshing(false);
+    }
+  }, []);
 
   const handleDismissWelcome = () => {
     setShowBanner(false);
@@ -152,7 +192,18 @@ export default function SecurityDashboard() {
   }
 
   return (
-    <View className="flex-1 bg-gray-50 p-6 justify-center">
+    <ScrollView
+      className="flex-1 bg-gray-50 px-6 pt-6"
+      contentContainerStyle={{ flexGrow: 1 }}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          colors={["#4f46e5"]} 
+          tintColor="#4f46e5"
+        />
+      }
+    >
       <Modal
         animationType="fade"
         transparent={true}
@@ -184,73 +235,153 @@ export default function SecurityDashboard() {
           </View>
         </View>
       </Modal>
-      <View className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
-        <Text className="text-gray-400 font-bold mb-2 uppercase tracking-widest text-[10px]">
-          Duty Status: {isCheckedIn ? "On Duty" : "Off Duty"}
+
+      {/* SECTION 1: ESTATE OVERVIEW */}
+      <View className="mb-8">
+        <Text className="text-gray-500 font-bold text-xs uppercase tracking-widest mb-4">
+          Guest Traffic Today
         </Text>
 
-        <Text className="text-2xl font-bold text-gray-900 mb-6">
-          {isCheckedIn ? "Active Shift" : "Security Check-In"}
+        {/* Row 1 */}
+        <View className="flex-row mb-2">
+          <View className="bg-white p-3 rounded-3xl shadow-sm border border-gray-100 flex-1 mr-2 items-center">
+            <Text className="text-blue-600 text-xl font-black">
+              {stats.total_expected}
+            </Text>
+            <Text className="text-gray-400 text-[9px] font-bold uppercase mt-1">
+              Expected Today
+            </Text>
+          </View>
+          <View className="bg-white p-3 rounded-3xl shadow-sm border border-gray-100 flex-1 items-center">
+            <Text className="text-emerald-600 text-xl font-black">
+              {stats.checked_in}
+            </Text>
+            <Text className="text-gray-400 text-[9px] font-bold uppercase mt-1">
+              Checked In
+            </Text>
+          </View>
+        </View>
+
+        {/* Row 2 */}
+        <View className="flex-row">
+          <View className="bg-white p-3 rounded-3xl shadow-sm border border-gray-100 flex-1 mr-2 items-center">
+            <Text className="text-orange-500 text-xl font-black">
+              {stats.checked_out}
+            </Text>
+            <Text className="text-gray-400 text-[9px] font-bold uppercase mt-1">
+              Checked Out
+            </Text>
+          </View>
+          <View className="bg-white p-3 rounded-3xl shadow-sm border border-red-50 flex-1 items-center">
+            <Text className="text-red-600 text-xl font-black">
+              {stats.overstayed}
+            </Text>
+            <Text className="text-red-400 text-[9px] font-bold uppercase mt-1">
+              Overstayed
+            </Text>
+          </View>
+        </View>
+      </View>
+
+      {/* SECTION 2: SHIFT MANAGEMENT */}
+      <View className="mb-8 flex-1 justify-center">
+        <Text className="text-gray-500 font-bold text-xs uppercase tracking-widest mb-4">
+          Shift Control
         </Text>
+        <View className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+          <Text className="text-gray-400 font-bold mb-2 uppercase tracking-widest text-[10px]">
+            Duty Status: {isCheckedIn ? "On Duty" : "Off Duty"}
+          </Text>
 
-        <TextInput
-          placeholder="Enter 10-digit Code"
-          placeholderTextColor={'#9CA3AF'}
-          value={checkInCode}
-          onChangeText={(val) =>
-            setCheckInCode(val.replace(/[^0-9]/g, "").slice(0, 10))
-          }
-          editable={!isCheckedIn}
-          keyboardType="number-pad"
-          className={`w-full h-14 px-4 rounded-xl border text-lg font-mono mb-4 ${
-            isCheckedIn
-              ? "bg-gray-100 border-gray-200 text-gray-400"
-              : "bg-white border-gray-300 text-indigo-600"
-          }`}
-        />
+          <Text className="text-lg font-bold text-gray-900 mb-6">
+            {isCheckedIn ? "Checked-In" : "Check-In"}
+          </Text>
 
-        <TouchableOpacity
-          onPress={handleCheckAction}
-          disabled={loading}
-          className={`w-full h-16 rounded-2xl flex-row items-center justify-center ${
-            isCheckedIn ? "bg-red-500" : "bg-indigo-600"
-          }`}
-        >
-          {loading ? (
-            <ActivityIndicator color="white" />
-          ) : (
-            <>
-              {isCheckedIn ? (
-                <LogOut color="white" size={20} />
-              ) : (
-                <LogIn color="white" size={20} />
-              )}
-              <Text className="text-white font-bold text-lg ml-2">
-                {isCheckedIn ? "End Shift" : "Start Shift"}
-              </Text>
-            </>
-          )}
-        </TouchableOpacity>
+          <TextInput
+            placeholder="Enter 10-digit Code"
+            placeholderTextColor={"#9CA3AF"}
+            value={checkInCode}
+            onChangeText={(val) =>
+              setCheckInCode(val.replace(/[^0-9]/g, "").slice(0, 10))
+            }
+            editable={!isCheckedIn}
+            keyboardType="number-pad"
+            className={`w-full h-10 px-4 rounded-xl border text-sm font-mono mb-4 ${
+              isCheckedIn
+                ? "bg-gray-100 border-gray-200 text-gray-400"
+                : "bg-white border-gray-300 text-indigo-600"
+            }`}
+          />
 
-        {isCheckedIn && (
           <TouchableOpacity
-            onPress={handleSendLocation}
-            disabled={updatingLoc}
-            className="w-full h-14 mt-4 rounded-2xl border border-indigo-100 bg-indigo-50 flex-row items-center justify-center active:bg-indigo-100"
+            onPress={handleCheckAction}
+            disabled={loading}
+            className={`w-full h-10 rounded-2xl flex-row items-center justify-center ${
+              isCheckedIn ? "bg-red-500" : "bg-indigo-600"
+            }`}
           >
-            {updatingLoc ? (
-              <ActivityIndicator color="#4f46e5" />
+            {loading ? (
+              <ActivityIndicator color="white" />
             ) : (
               <>
-                <MapPin color="#4f46e5" size={20} />
-                <Text className="text-indigo-600 font-bold ml-2 text-base">
-                  Send Live Location
+                {isCheckedIn ? (
+                  <LogOut color="white" size={20} />
+                ) : (
+                  <LogIn color="white" size={20} />
+                )}
+                <Text className="text-white font-bold text-lg ml-2">
+                  {isCheckedIn ? "End Shift" : "Start Shift"}
                 </Text>
               </>
             )}
           </TouchableOpacity>
-        )}
+
+          {isCheckedIn && (
+            <TouchableOpacity
+              onPress={handleSendLocation}
+              disabled={updatingLoc}
+              className="w-full h-10 mt-4 rounded-2xl border border-indigo-100 bg-indigo-50 flex-row items-center justify-center active:bg-indigo-100"
+            >
+              {updatingLoc ? (
+                <ActivityIndicator color="#4f46e5" />
+              ) : (
+                <>
+                  <MapPin color="#4f46e5" size={20} />
+                  <Text className="text-indigo-600 font-bold ml-2 text-base">
+                    Send Live Location
+                  </Text>
+                </>
+              )}
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
-    </View>
+
+      {/* SECTION 3: DAILY EVENTS */}
+      <View className="mb-4">
+        <Text className="text-gray-500 font-bold text-xs uppercase tracking-widest mb-4">
+          Today&apos;s Event(s)
+        </Text>
+        <TouchableOpacity
+          // onPress={() => router.push("/events")}
+          className="bg-gray-900 p-6 rounded-[30px] shadow-xl flex-row items-center justify-between"
+        >
+          <View className="flex-row items-center">
+            <View className="bg-indigo-500 w-12 h-12 rounded-2xl items-center justify-center mr-4">
+              <Bell size={24} color="white" />
+            </View>
+            <View>
+              <Text className="text-white text-lg font-bold">
+                {stats.active_events.toString()} Active Events
+              </Text>
+              <Text className="text-gray-400 text-xs">
+                Manage guest access codes
+              </Text>
+            </View>
+          </View>
+          <ShieldCheck color="#6366f1" size={28} />
+        </TouchableOpacity>
+      </View>
+    </ScrollView>
   );
 }

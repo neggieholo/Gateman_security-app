@@ -1,5 +1,11 @@
 import React, { useContext, useEffect } from "react";
-import { RefreshControl, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import {
+  RefreshControl,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import NotificationCard from "./Components/NotificationCard";
 import SwipeDismiss from "./Components/SwipeableNotification";
 import TempNotificationCard from "./Components/TempNotificationCard";
@@ -20,18 +26,21 @@ export default function NotificationsPage() {
     setNotifications,
     triggerRefresh,
     setBadgeCount,
-    loadingNotifications
+    loadingNotifications,
   } = useContext(UserContext);
 
+  // useEffect(() => {
+  //   if (user?.isTemp) {
+  //     triggerRefresh();
+  //   }
+  // }, []);
   useEffect(() => {
-    if (user?.isTemp) {
-      triggerRefresh();
-    }
-  }, []);
+    triggerRefresh();
+  }, [triggerRefresh]);
 
   useEffect(() => {
     const handleRead = async () => {
-      console.log("HandleRead called")
+      console.log("HandleRead called");
       if (user?.isTemp && tempnotification) {
         setBadgeCount(0);
         await markSecurityNotificationRead();
@@ -41,7 +50,7 @@ export default function NotificationsPage() {
       }
     };
     handleRead();
-  }, [tempnotification, notifications.length]);
+  }, [tempnotification, notifications.length, setBadgeCount, user?.isTemp]);
 
   const handleDelete = async (id?: string) => {
     if (user?.isTemp) {
@@ -54,12 +63,7 @@ export default function NotificationsPage() {
   };
 
   return (
-    <ScrollView
-      className="flex-1 bg-gray-50"
-      refreshControl={
-        <RefreshControl refreshing={loadingNotifications} onRefresh={triggerRefresh} />
-      }
-    >
+    <View className="flex flex-1 bg-gray-50">
       <View className="p-4 flex-row justify-between items-center">
         <Text className="text-2xl font-bold text-gray-900">Notifications</Text>
         <TouchableOpacity onPress={triggerRefresh}>
@@ -67,7 +71,16 @@ export default function NotificationsPage() {
         </TouchableOpacity>
       </View>
 
-      <View className="px-2">
+      <ScrollView
+        contentContainerStyle={{ flexGrow: 1 }}
+        className="bg-gray-50"
+        refreshControl={
+          <RefreshControl
+            refreshing={loadingNotifications}
+            onRefresh={triggerRefresh}
+          />
+        }
+      >
         {/* Render Temp Notification (Singular) */}
         {user?.isTemp && tempnotification && (
           <SwipeDismiss onDismiss={() => handleDelete()}>
@@ -101,7 +114,7 @@ export default function NotificationsPage() {
             </Text>
           </View>
         )}
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }

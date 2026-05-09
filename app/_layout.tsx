@@ -1,17 +1,27 @@
 import { ActionSheetProvider } from "@expo/react-native-action-sheet";
 import { Stack } from "expo-router";
+import { useColorScheme } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { UserProvider } from "./UserContext";
+import { StatusBar } from "expo-status-bar";
 
 export default function RootLayout() {
+  const colorScheme = useColorScheme();
+
   return (
     <SafeAreaProvider>
-      <KeyboardProvider >
+      <KeyboardProvider>
         <GestureHandlerRootView style={{ flex: 1 }}>
           <ActionSheetProvider>
             <UserProvider>
+              <StatusBar
+                key={`global-status-${colorScheme}`}
+                style={colorScheme === "dark" ? "light" : "dark"}
+                backgroundColor="transparent"
+                translucent={true}
+              />
               <Stack
                 screenOptions={{
                   headerStyle: {
@@ -71,6 +81,14 @@ export default function RootLayout() {
                   options={{
                     title: "Call",
                     headerShown: false,
+                  }}
+                />
+
+                <Stack.Screen
+                  name="ChangePassword"
+                  options={{
+                    title: "Password Change",
+                    headerShown: true,
                   }}
                 />
               </Stack>

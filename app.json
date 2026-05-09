@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "gateman_security",
+    "name": "GM Security",
     "slug": "gateman_security",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -11,7 +11,10 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.snametech.gatemansecurity",
-      "googleServicesFile": "./GoogleService-Info.plist"
+      "googleServicesFile": "./GoogleService-Info.plist",
+      "infoPlist": {
+        "UIBackgroundModes": ["voip", "remote-notification", "audio"]
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -20,6 +23,15 @@
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
+      "permissions": [
+        "INTERNET",
+        "WAKE_LOCK",
+        "ACCESS_NETWORK_STATE",
+        "BLUETOOTH",
+        "BIND_TELECOM_CONNECTION_SERVICE",
+        "FOREGROUND_SERVICE",
+        "CALL_PHONE"
+      ],
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "package": "com.snametech.gatemansecurity",
@@ -31,7 +43,7 @@
     },
     "plugins": [
       "expo-router",
-      "expo-notifications",
+      "expo-notifications",      
       [
         "expo-splash-screen",
         {

@@ -15,20 +15,20 @@ export default function SwipeDismiss({ children, onDismiss }: { children: React.
   const translateX = useSharedValue(0);
 
   const panGesture = Gesture.Pan()
+    // CRITICAL: Only activate the swipe if moving horizontally more than 10px
+    // This allows vertical touches to pass through to the ScrollView
+    .activeOffsetX([-10, 10]) 
     .onUpdate((event) => {
-      // Only allow swiping to the right (positive X)
       if (event.translationX > 0) {
         translateX.value = event.translationX;
       }
     })
     .onEnd((event) => {
       if (event.translationX > SWIPE_THRESHOLD) {
-        // Slide off screen to the right
         translateX.value = withTiming(SCREEN_WIDTH, { duration: 300 }, () => {
           runOnJS(onDismiss)();
         });
       } else {
-        // Snap back to original position
         translateX.value = withTiming(0);
       }
     });

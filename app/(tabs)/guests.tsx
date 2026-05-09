@@ -8,6 +8,7 @@ import {
   LogOut,
   RefreshCcw,
   Search,
+  ShieldCheck,
   User,
 } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
@@ -25,8 +26,11 @@ import {
 import InvitationDetailModal from "../Components/InvitationDetail";
 import { fetchGatePasses, logActivityApi } from "../services/api";
 import { Invitation } from "../services/interfaces";
+import { router } from "expo-router";
+import { useUser } from "../UserContext";
 
 export default function GatePassesView() {
+  const {user} = useUser();
   const [invitations, setInvitations] = useState<Invitation[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -362,16 +366,37 @@ export default function GatePassesView() {
           isExpired,
           invite.start_date,
           invite.is_cancelled,
-          invite.start_time
+          invite.start_time,
         );
 
     const canAction = [
       "NOT ARRIVED",
-      "NOT ARRIVED TODAY", 
+      "NOT ARRIVED TODAY",
       "READY FOR ENTRY",
       "INSIDE",
       "ARRIVED TODAY",
     ].includes(status.label);
+
+    if (!user?.estate_id) {
+      return (
+        <View className="flex-1 justify-center items-center p-6 bg-gray-50">
+          <View className="bg-white p-8 rounded-3xl shadow-sm items-center border border-gray-100">
+            <ShieldCheck size={60} color="#4f46e5" />
+            <Text className="text-xl font-bold text-gray-900 mt-4 text-center">
+              Security Access Restricted
+            </Text>
+            <TouchableOpacity
+              className="bg-indigo-600 py-4 px-10 rounded-2xl shadow-md mt-6"
+              onPress={() => router.push("/JoinRequest" as any)}
+            >
+              <Text className="text-white font-bold text-lg">
+                Join an Estate
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      );
+    }
 
     return (
       <View
@@ -511,7 +536,7 @@ export default function GatePassesView() {
   };
 
   return (
-    <View className="flex-1 bg-gray-50 pt-12 px-4">
+    <View className="flex-1 bg-gray-50 p-4">
       <View className="flex-row items-center bg-white p-2 rounded-2xl border border-slate-100 shadow-sm mb-6">
         <View className="flex-1 flex-row items-center px-3">
           <Search color="#94a3b8" size={20} />
@@ -561,7 +586,7 @@ export default function GatePassesView() {
                   isPastTime(selectedInvite.end_date, selectedInvite.end_time),
                   selectedInvite.start_date,
                   selectedInvite.is_cancelled,
-                  selectedInvite.start_time
+                  selectedInvite.start_time,
                 )
             : null
         }

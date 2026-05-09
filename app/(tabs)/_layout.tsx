@@ -5,7 +5,13 @@ import CookieManager from "@react-native-cookies/cookies";
 import auth from "@react-native-firebase/auth";
 import { Tabs, useRouter } from "expo-router";
 import { useState } from "react";
-import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
+import {
+  ActivityIndicator,
+  Alert,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 export default function SecurityTabsLayout() {
@@ -13,7 +19,13 @@ export default function SecurityTabsLayout() {
   const [loggingOut, setLoggingOut] = useState(false);
   const router = useRouter();
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
+    Alert.alert("Logout", "Are you sure you want to end your session?", [
+      { text: "Cancel", style: "cancel" },
+      { text: "Logout", style: "destructive", onPress: () => logOut() },
+    ]);
+  };
+  const logOut = async () => {
     setLoggingOut(true);
     try {
       if (socket) socket.disconnect();
@@ -119,11 +131,21 @@ export default function SecurityTabsLayout() {
         />
 
         <Tabs.Screen
-          name="changepassword"
+          name="events"
           options={{
-            title: "Change Password",
+            title: "Events",
             tabBarIcon: ({ color, size }) => (
-              <Ionicons name="key" size={size} color={color} />
+              <Ionicons name="calendar" size={size} color={color} />
+            ),
+          }}
+        />
+
+        <Tabs.Screen
+          name="settings"
+          options={{
+            title: "Settings",
+            tabBarIcon: ({ color, size }) => (
+              <Ionicons name="settings" size={size} color={color} />
             ),
           }}
         />
