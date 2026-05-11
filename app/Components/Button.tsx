@@ -15,6 +15,6 @@ export const Button: React.FC<ButtonProps> = ({ title, onPress, disabled = false
     className={`bg-white py-3 rounded-lg ${disabled ? "opacity-50" : ""}`}
     {...rest}
   >
-    <Text className="text-blue-600 text-center font-bold">{title}</Text>
+    <Text className="text-gm-navy text-center font-bold">{title}</Text>
   </TouchableOpacity>
 );

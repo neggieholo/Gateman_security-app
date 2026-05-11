@@ -40,12 +40,12 @@ export const registerSecurity = async (
   }
 };
 
-export const loginSecurity = async (email: string, password: string) => {
+export const postLogin = async (email: string, password: string, biometric_login: boolean) => {
   try {
     const res = await fetch(`${BASE_URL}/auth/login/security`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ email, password, biometric_login }),
       credentials: "include",
     });
 
@@ -143,7 +143,7 @@ export const sendOtpApi = async (email: string) => {
 
 export const forgotPasswordApi = async (
   email: string,
-  role: "admin" | "tenant",
+  role: "admin" | "tenant" | "security",
 ) => {
   try {
     const res = await fetch(`${BASE_URL}/forgot-password`, {
@@ -530,6 +530,47 @@ export const getTodayEvents = async () => {
     return await res.json();
   } catch (err) {
     console.error("Events fetch error:", err);
-    return []; // Return empty array so .map() doesn't crash the UI
+    return [];
+  }
+};
+
+export const toggleGuestStatus = async (registrationId: string) => {
+  try {
+    const response = await fetch(`${BASE_URL}/event/registrations/${registrationId}/toggle-status`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include', 
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to update status');
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Fetch Error:", error);
+    throw error;
+  }
+};
+
+
+export const checkAllOut = async (eventId: string) => {
+  try {
+    const response = await fetch(
+      `${BASE_URL}/event/${eventId}/check-all-out`,
+      {
+        method: "POST",
+        credentials: "include",
+      },
+    );
+
+    if (!response.ok) throw new Error("Bulk checkout failed");
+    return await response.json();
+  } catch (error) {
+    throw error;
   }
 };

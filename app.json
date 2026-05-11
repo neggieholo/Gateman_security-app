@@ -13,15 +13,17 @@
       "bundleIdentifier": "com.snametech.gatemansecurity",
       "googleServicesFile": "./GoogleService-Info.plist",
       "infoPlist": {
-        "UIBackgroundModes": ["voip", "remote-notification", "audio"]
+        "UIBackgroundModes": [
+          "voip",
+          "remote-notification",
+          "audio"
+        ]
       }
     },
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "permissions": [
         "INTERNET",
@@ -29,8 +31,20 @@
         "ACCESS_NETWORK_STATE",
         "BLUETOOTH",
         "BIND_TELECOM_CONNECTION_SERVICE",
-        "FOREGROUND_SERVICE",
-        "CALL_PHONE"
+        "android.permission.FOREGROUND_SERVICE",
+        "CALL_PHONE",
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.POST_NOTIFICATIONS",
+        "android.permission.BIND_TELECOM_CONNECTION_SERVICE",
+        "android.permission.SCHEDULE_EXACT_ALARM",
+        "android.permission.VIBRATE",
+        "android.permission.RECEIVE_BOOT_COMPLETED",
+        "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK",
+        "android.permission.SYSTEM_ALERT_WINDOW",
+        "android.permission.USE_FULL_SCREEN_INTENT"
       ],
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
@@ -43,7 +57,18 @@
     },
     "plugins": [
       "expo-router",
-      "expo-notifications",      
+      "expo-notifications",
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "deploymentTarget": "15.1",
+            "useFrameworks": "static",
+            "buildReactNativeFromSource": true,
+            "bitcode": false
+          }
+        }
+      ],
       [
         "expo-splash-screen",
         {
@@ -59,7 +84,8 @@
       "@react-native-firebase/app",
       "@react-native-firebase/auth",
       "@react-native-firebase/messaging",
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true,

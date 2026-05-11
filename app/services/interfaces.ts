@@ -26,6 +26,8 @@ export interface SecurityUser {
   last_known_location?: string;
   last_location_time?: string;
   isTemp?: boolean;
+  biometric_login: boolean;
+  password_changed: boolean;
   role: 'SECURITY';
   id_type?: string;       
   id_front_url?: string;
@@ -140,4 +142,39 @@ export interface JoinRequestSubmitResponse {
   success: boolean;
   joinRequest?: SecurityJoinRequestStatus;
   error?: string;
+}
+
+export interface EventGuest {
+  id: string;
+  guest_name: string;
+  guest_code: string;
+  status: 'registered' | 'checked_in' | 'checked_out';
+  checked_in_at: string | null;
+  checked_out_at: string | null;
+  is_checked_in:  boolean;
+  is_checked_out:  boolean;
+
+}
+
+export interface EstateEvent {
+  id: string;
+  estate_id: string;
+  organizer_id: string;
+  title: string;
+  description: string | null;
+  banner_url: string | null;
+  start_date: string;
+  end_date: string;
+  start_time: string;
+  end_time: string;
+  venue_detail: string | null;
+  expected_guests: number;
+  is_paid: boolean;
+  ticket_price: number;
+  is_approved: boolean;
+  // Aggregated fields from your SQL query
+  registered_count: number; 
+  currently_inside: number; // Counted from guests where in != null && out == null
+  total_checked_out: number; // Counted from guests where out != null
+  guest_list: EventGuest[];
 }

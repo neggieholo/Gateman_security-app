@@ -1,4 +1,7 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as LocalAuthentication from "expo-local-authentication";
 import { router } from "expo-router";
+import * as SecureStore from "expo-secure-store";
 import {
   Building,
   ChevronRight,
@@ -14,6 +17,7 @@ import {
   FlatList,
   Modal,
   Platform,
+  Switch,
   Text,
   TextInput,
   TouchableOpacity,
@@ -53,6 +57,7 @@ export default function ResidentSettings() {
     phone: user?.phone || "",
     email_verified: !!user?.email,
     phone_verified: !!user?.phone,
+    biometric_login: user?.biometric_login || false,
   });
 
   const profileFields = [
@@ -80,6 +85,7 @@ export default function ResidentSettings() {
         phone: user.phone || "",
         email_verified: !!user.email,
         phone_verified: !!user.phone,
+        biometric_login: user?.biometric_login || false,
       });
     }
   }, [user]);
@@ -215,6 +221,49 @@ export default function ResidentSettings() {
     setShowOtpInput(false);
   };
 
+  const toggleBiometrics = async (newValue: boolean) => {
+    if (newValue === true) {
+      const hasHardware = await LocalAuthentication.hasHardwareAsync();
+      const isEnrolled = await LocalAuthentication.isEnrolledAsync();
+
+      if (!hasHardware || !isEnrolled) {
+        return Alert.alert(
+          "Not Supported",
+          "Please enable biometrics in your phone settings first.",
+        );
+      }
+
+      // Scan to verify the user is the owner of the device
+      const result = await LocalAuthentication.authenticateAsync({
+        promptMessage: "Confirm identity to enable Biometric Login",
+      });
+
+      if (result.success) {
+        await AsyncStorage.setItem("biometrics_active", "true");
+        setProfile((prev) => ({
+          ...prev,
+          biometric_login: true,
+        }));
+      } else {
+        Alert.alert(
+          "Unrecognized",
+          "Biometric authentication failed. Please try again.",
+        );
+        setProfile((prev) => ({
+          ...prev,
+          biometric_login: false,
+        }));
+        await AsyncStorage.setItem("biometrics_active", "false");
+      }
+    } else {
+      setProfile((prev) => ({
+        ...prev,
+        biometric_login: false,
+      }));
+      await AsyncStorage.setItem("biometrics_active", "false");
+    }
+  };
+
   const handleSaveConfig = async () => {
     if (
       (profile.email !== user?.email && !profile.email_verified) ||
@@ -235,11 +284,15 @@ export default function ResidentSettings() {
         body: JSON.stringify({
           email: profile.email,
           phone: profile.phone,
+          biometric_login: profile.biometric_login,
         }),
       });
 
       const data = await res.json();
       if (data.success) {
+        if (profile.email !== user?.email) {
+          await SecureStore.setItemAsync("user_email", profile.email);
+        }
         Alert.alert("Success", "Profile updated successfully");
         setIsEditing(false);
       } else {
@@ -254,7 +307,8 @@ export default function ResidentSettings() {
 
   const hasChanges =
     profile.email.trim() !== (user?.email || "") ||
-    profile.phone.trim() !== (user?.phone || "");
+    profile.phone.trim() !== (user?.phone || "") ||
+    profile.biometric_login !== (user?.biometric_login || false);
 
   const memoizedHeader = useMemo(
     () => (
@@ -308,6 +362,7 @@ export default function ResidentSettings() {
                     phone: user?.phone || "",
                     email_verified: !!user?.email,
                     phone_verified: !!user?.phone,
+                    biometric_login: user?.biometric_login || false,
                   });
                   setError("");
                 }
@@ -383,7 +438,7 @@ export default function ResidentSettings() {
                 paddingTop: Platform.OS === "android" ? 2 : 0,
               }}
               textInputProps={{
-                placeholderTextColor: "#94a3b8", 
+                placeholderTextColor: "#94a3b8",
                 maxLength: 10,
               }}
               textContainerStyle={{
@@ -411,10 +466,40 @@ export default function ResidentSettings() {
               </TouchableOpacity>
             )}
           </View>
+
+          <View className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm mt-6">
+            <View className="flex-row items-center justify-between">
+              <View className="flex-row items-center flex-1">
+                <View className="bg-indigo-50 p-2 rounded-xl">
+                  {/* Using a Lock or Scan icon for biometrics */}
+                  <User size={20} color="#4f46e5" />
+                </View>
+                <View className="ml-4 flex-1">
+                  <Text className="font-bold text-slate-900 text-lg">
+                    Biometric Login
+                  </Text>
+                  <Text className="text-slate-500 text-xs">
+                    Use fingerprint or face ID to secure your account
+                  </Text>
+                </View>
+              </View>
+
+              <Switch
+                value={profile.biometric_login}
+                disabled={!isEditing}
+                onValueChange={(value) => toggleBiometrics(value)}
+                trackColor={{ false: "#cbd5e1", true: "#4f46e5" }}
+                thumbColor={
+                  Platform.OS === "ios"
+                    ? "#fff"
+                    : profile.biometric_login
+                      ? "#fff"
+                      : "#f4f3f4"
+                }
+              />
+            </View>
+          </View>
         </View>
-
-        {/* Change Password & Save Button */}
-
         <TouchableOpacity
           className="bg-slate-900 p-5 rounded-3xl flex-row items-center justify-between shadow-lg"
           onPress={() => router.push("/ChangePassword" as any)}
@@ -445,15 +530,23 @@ export default function ResidentSettings() {
         )}
       </View>
     ),
-    [profile, isEditing, otpLoading, verifyingField, showOtpInput, saving],
-  ); // Add dependencies here
+    [
+      profile,
+      isEditing,
+      otpLoading,
+      verifyingField,
+      showOtpInput,
+      saving,
+      hasChanges,
+    ],
+  );
 
   return (
     <View className="flex-1 bg-slate-50">
       <FlatList
         data={[]}
         renderItem={null}
-        ListHeaderComponent={memoizedHeader} // Pass the memoized variable
+        ListHeaderComponent={memoizedHeader}
         keyboardShouldPersistTaps="handled"
         removeClippedSubviews={false}
       />

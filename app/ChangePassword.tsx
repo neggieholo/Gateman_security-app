@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import * as SecureStore from "expo-secure-store";
 import { 
   View, 
   Text, 
@@ -40,6 +41,7 @@ export default function ChangePasswordScreen() {
       const data = await changePassword(form.currentPassword, form.newPassword, role);
 
       if (data.success) {
+        await SecureStore.setItemAsync("user_password", form.newPassword);
         Alert.alert("Success", "Password updated successfully");
         setForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
       } else {
