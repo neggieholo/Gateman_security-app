@@ -32,6 +32,8 @@
         "BLUETOOTH",
         "BIND_TELECOM_CONNECTION_SERVICE",
         "android.permission.FOREGROUND_SERVICE",
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO",
         "CALL_PHONE",
         "ACCESS_COARSE_LOCATION",
         "ACCESS_FINE_LOCATION",
@@ -58,6 +60,15 @@
     "plugins": [
       "expo-router",
       "expo-notifications",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow GateMan Security to access your camera",
+          "microphonePermission": "Allow GateMan Security to access your microphone",
+          "recordAudioAndroid": true,
+          "barcodeScannerEnabled": true
+        }
+      ],
       [
         "expo-build-properties",
         {

@@ -574,3 +574,21 @@ export const checkAllOut = async (eventId: string) => {
     throw error;
   }
 };
+
+export const getInvitationById = async (id: string) => {
+  try {
+    const response = await fetch(`${BASE_URL}/invitations/${id}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials:'include'
+    });
+
+    const json = await response.json();
+    return json; 
+  } catch (error) {
+    console.error("API Error (getInvitationById):", error);
+    return { success: false, message: "Network request failed" };
+  }
+};

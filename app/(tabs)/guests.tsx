@@ -1,4 +1,4 @@
-import { CameraView, useCameraPermissions } from "expo-camera";
+import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import {
   ClipboardList,
   Info,
@@ -22,7 +22,11 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { fetchGatePasses, logActivityApi } from "../services/api";
+import {
+  fetchGatePasses,
+  getInvitationById,
+  logActivityApi,
+} from "../services/api";
 import { Invitation } from "../services/interfaces";
 import { useUser } from "../UserContext";
 
@@ -45,6 +49,9 @@ export default function GatePassesView() {
   const [selectedInvite, setSelectedInvite] = useState<Invitation | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [updatingInvite, setUpdatingInvite] = useState<string | null>(null);
+  const [invitation, setInvitation] = useState(null);
+  const [fetching, setFetching] = useState(false);
+  const [scanned, setScanned] = useState(false);
 
   const loadData = async () => {
     try {
@@ -65,6 +72,24 @@ export default function GatePassesView() {
   const onRefresh = () => {
     setRefreshing(true);
     loadData();
+  };
+
+  const loadInvitationData = async (id: string) => {
+    setFetching(true);
+    try {
+      const res = await getInvitationById(id);
+      if (res.success) {
+        setInvitation(res.invitation);
+        // Example: Set your form states here
+        // setStartDate(res.invitation.start_date);
+      } else {
+        Alert.alert("Error", res.message || "Could not find invitation");
+      }
+    } catch (err) {
+      Alert.alert("Error", "An unexpected error occurred");
+    } finally {
+      setFetching(false);
+    }
   };
 
   const isPastTime = (endDate: string, endTime: string) => {
@@ -155,9 +180,11 @@ export default function GatePassesView() {
     return base;
   }, [activeTab, logFilter, searchTerm, invitations]);
 
-  const handleBarCodeScanned = ({ data }: { data: string }) => {
-    setShowScanner(false);
-    setSearchTerm(data);
+  const handleBarCodeScanned = ({ type, data }: { type: string, data: string }) => {
+    setScanned(true);
+    Alert.alert("Invitation Found", `ID: ${data}`, [
+      { text: "OK", onPress: () => setScanned(false) }
+    ]);
   };
 
   const handleLogActivity = async (inviteId: string, currentLabel: string) => {
@@ -329,7 +356,9 @@ export default function GatePassesView() {
                 </View>
                 <Text className="font-black text-slate-300 my-1">OR</Text>
                 <View className="flex items-center gap-2">
-                  <Text className="text-slate-500 font-bold text-xl">Scan QR</Text>
+                  <Text className="text-slate-500 font-bold text-xl">
+                    Scan QR
+                  </Text>
                   <TouchableOpacity
                     onPress={() => setShowScanner(true)}
                     className="w-20 h-20 bg-slate-900 rounded-[24px] items-center justify-center shadow-lg active:scale-95"
@@ -342,8 +371,10 @@ export default function GatePassesView() {
               <View className="h-[500px] w-full rounded-3xl overflow-hidden mb-6 border-2 border-indigo-600">
                 <CameraView
                   style={StyleSheet.absoluteFillObject}
-                  onBarcodeScanned={handleBarCodeScanned}
-                  barcodeScannerSettings={{ barcodeTypes: ["qr"] }}
+                  onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
+                  barcodeScannerSettings={{
+                    barcodeTypes: ["qr"],
+                  }}
                 />
                 <TouchableOpacity
                   onPress={() => setShowScanner(false)}

@@ -333,7 +333,7 @@ export default function LoginScreen() {
             <View
               className={`justify-center ${!showBiometricBtn ? "flex-1" : ""}`}
             >
-              <View className="bg-gm-gold/60 rounded-md p-6">
+              <View className="bg-gm-gold rounded-md p-6">
                 <Text className="text-3xl font-bold mb-6 text-center text-black">
                   Login
                 </Text>
@@ -394,7 +394,7 @@ export default function LoginScreen() {
             <View
               className={`justify-center ${!showBiometricBtn ? "flex-1" : ""}`}
             >
-              <View className="bg-gm-gold/60  rounded-md p-6">
+              <View className="bg-gm-gold  rounded-md p-6">
                 <Text className="text-3xl font-bold mb-6 text-center text-black">
                   Register
                 </Text>
@@ -489,7 +489,7 @@ export default function LoginScreen() {
             <View
               className={`justify-center ${!showBiometricBtn ? "flex-1" : ""}`}
             >
-              <View className="bg-gm-gold/60  rounded-md p-6">
+              <View className="bg-gm-gold rounded-md p-6">
                 <Text className="text-3xl font-bold mb-6 text-center text-black">
                   Forgot Password
                 </Text>
