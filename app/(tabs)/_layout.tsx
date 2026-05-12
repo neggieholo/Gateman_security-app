@@ -78,12 +78,12 @@ export default function SecurityTabsLayout() {
       <Tabs
         initialRouteName="dashboard"
         screenOptions={{
-          headerStyle: { backgroundColor: "#2563EB" },
+          headerStyle: { backgroundColor: "#0A1F44" },
           headerTintColor: "#FFFFFF",
           headerTitleStyle: { fontWeight: "bold" },
           headerTitleAlign: "center",
-          tabBarStyle: { backgroundColor: "#2563EB", borderTopWidth: 0 },
-          tabBarActiveTintColor: "#FFFFFF",
+          tabBarStyle: { backgroundColor: "#0A1F44", borderTopWidth: 0 },
+          tabBarActiveTintColor: "#D4AF37",
           tabBarInactiveTintColor: "#BFDBFE",
           // REMOVED headerRight from here so it's not global
         }}

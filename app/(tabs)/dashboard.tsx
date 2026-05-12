@@ -174,7 +174,7 @@ export default function SecurityDashboard() {
   // --- Handle No Estate Joined View ---
   if (!user?.estate_id) {
     return (
-      <View className="flex-1 justify-center items-center p-6 bg-gray-50">
+      <View className="flex-1 justify-center items-center p-6 bg-gm-white">
         <View className="bg-white p-8 rounded-3xl shadow-sm items-center border border-gray-100">
           <ShieldCheck size={60} color="#4f46e5" />
           <Text className="text-xl font-bold text-gray-900 mt-4 text-center">
@@ -193,13 +193,13 @@ export default function SecurityDashboard() {
 
   return (
     <ScrollView
-      className="flex-1 bg-gray-50 px-6 pt-6"
+      className="flex-1 bg-gm-navy/20 px-6 pt-6"
       contentContainerStyle={{ flexGrow: 1 }}
       refreshControl={
         <RefreshControl
           refreshing={refreshing}
           onRefresh={onRefresh}
-          colors={["#4f46e5"]} 
+          colors={["#4f46e5"]}
           tintColor="#4f46e5"
         />
       }
@@ -238,25 +238,25 @@ export default function SecurityDashboard() {
 
       {/* SECTION 1: ESTATE OVERVIEW */}
       <View className="mb-8">
-        <Text className="text-gray-500 font-bold text-xs uppercase tracking-widest mb-4">
+        <Text className="text-gm-navy font-bold text-xs uppercase tracking-widest mb-4">
           Guest Traffic Today
         </Text>
 
         {/* Row 1 */}
         <View className="flex-row mb-2">
-          <View className="bg-white p-3 rounded-3xl shadow-sm border border-gray-100 flex-1 mr-2 items-center">
+          <View className="bg-white p-3 rounded-3xl shadow-sm border border-gm-navy flex-1 mr-2 items-center">
             <Text className="text-blue-600 text-xl font-black">
               {stats.total_expected}
             </Text>
-            <Text className="text-gray-400 text-[9px] font-bold uppercase mt-1">
+            <Text className="text-gray-500 text-[9px] font-bold uppercase mt-1">
               Expected Today
             </Text>
           </View>
-          <View className="bg-white p-3 rounded-3xl shadow-sm border border-gray-100 flex-1 items-center">
+          <View className="bg-white p-3 rounded-3xl shadow-sm border border-gm-navy flex-1 items-center">
             <Text className="text-emerald-600 text-xl font-black">
               {stats.checked_in}
             </Text>
-            <Text className="text-gray-400 text-[9px] font-bold uppercase mt-1">
+            <Text className="text-gray-500 text-[9px] font-bold uppercase mt-1">
               Checked In
             </Text>
           </View>
@@ -264,15 +264,15 @@ export default function SecurityDashboard() {
 
         {/* Row 2 */}
         <View className="flex-row">
-          <View className="bg-white p-3 rounded-3xl shadow-sm border border-gray-100 flex-1 mr-2 items-center">
+          <View className="bg-white p-3 rounded-3xl shadow-sm border border-gm-navy flex-1 mr-2 items-center">
             <Text className="text-orange-500 text-xl font-black">
               {stats.checked_out}
             </Text>
-            <Text className="text-gray-400 text-[9px] font-bold uppercase mt-1">
+            <Text className="text-gray-500 text-[9px] font-bold uppercase mt-1">
               Checked Out
             </Text>
           </View>
-          <View className="bg-white p-3 rounded-3xl shadow-sm border border-red-50 flex-1 items-center">
+          <View className="bg-white p-3 rounded-3xl shadow-sm border border-gm-navy flex-1 items-center">
             <Text className="text-red-600 text-xl font-black">
               {stats.overstayed}
             </Text>
@@ -285,13 +285,18 @@ export default function SecurityDashboard() {
 
       {/* SECTION 2: SHIFT MANAGEMENT */}
       <View className="mb-8 flex-1 justify-center">
-        <Text className="text-gray-500 font-bold text-xs uppercase tracking-widest mb-4">
+        <Text className="text-gm-navy font-bold text-xs uppercase tracking-widest mb-4">
           Shift Control
         </Text>
-        <View className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
-          <Text className="text-gray-400 font-bold mb-2 uppercase tracking-widest text-[10px]">
-            Duty Status: {isCheckedIn ? "On Duty" : "Off Duty"}
-          </Text>
+        <View className="bg-white p-6 rounded-3xl shadow-sm border border-gm-navy">
+          <View className="flex-row gap-2 items-center mb-2">
+            <Text className="text-gray-500 font-bold uppercase tracking-widest text-[10px]">Duty Status:</Text>
+            <Text
+              className={`font-bold uppercase tracking-widest text-[10px] ${isCheckedIn ? "text-green-400" : "text-red-400"}`}
+            >
+              {isCheckedIn ? "On Duty" : "Off Duty"}
+            </Text>
+          </View>
 
           <Text className="text-lg font-bold text-gray-900 mb-6">
             {isCheckedIn ? "Checked-In" : "Check-In"}
@@ -306,10 +311,10 @@ export default function SecurityDashboard() {
             }
             editable={!isCheckedIn}
             keyboardType="number-pad"
-            className={`w-full h-10 px-4 rounded-xl border text-sm font-mono mb-4 ${
+            className={`w-full h-10 px-4 rounded-xl border text-sm font-mono mb-4 border-gm-gold ${
               isCheckedIn
-                ? "bg-gray-100 border-gray-200 text-gray-400"
-                : "bg-white border-gray-300 text-indigo-600"
+                ? "bg-gray-100 text-gray-400"
+                : "bg-white text-gm-navy"
             }`}
           />
 
@@ -317,7 +322,7 @@ export default function SecurityDashboard() {
             onPress={handleCheckAction}
             disabled={loading}
             className={`w-full h-10 rounded-2xl flex-row items-center justify-center ${
-              isCheckedIn ? "bg-red-500" : "bg-indigo-600"
+              isCheckedIn ? "bg-red-500" : "bg-gm-navy"
             }`}
           >
             {loading ? (
@@ -329,7 +334,7 @@ export default function SecurityDashboard() {
                 ) : (
                   <LogIn color="white" size={20} />
                 )}
-                <Text className="text-white font-bold text-lg ml-2">
+                <Text className={`font-bold text-lg ml-2 ${isCheckedIn ? "text-white" : "text-gm-gold"}`}>
                   {isCheckedIn ? "End Shift" : "Start Shift"}
                 </Text>
               </>
@@ -340,14 +345,14 @@ export default function SecurityDashboard() {
             <TouchableOpacity
               onPress={handleSendLocation}
               disabled={updatingLoc}
-              className="w-full h-10 mt-4 rounded-2xl border border-indigo-100 bg-indigo-50 flex-row items-center justify-center active:bg-indigo-100"
+              className="w-full h-10 mt-4 rounded-2xl border border-indigo-100 bg-gm-navy flex-row items-center justify-center active:bg-indigo-100"
             >
               {updatingLoc ? (
                 <ActivityIndicator color="#4f46e5" />
               ) : (
                 <>
-                  <MapPin color="#4f46e5" size={20} />
-                  <Text className="text-indigo-600 font-bold ml-2 text-base">
+                  <MapPin color="#D4AF37" size={20} />
+                  <Text className="text-gm-gold font-bold ml-2 text-base">
                     Send Live Location
                   </Text>
                 </>
@@ -359,27 +364,27 @@ export default function SecurityDashboard() {
 
       {/* SECTION 3: DAILY EVENTS */}
       <View className="mb-4">
-        <Text className="text-gray-500 font-bold text-xs uppercase tracking-widest mb-4">
+        <Text className="text-gm-charcoal font-bold text-xs uppercase tracking-widest mb-4">
           Today&apos;s Event(s)
         </Text>
         <TouchableOpacity
-          // onPress={() => router.push("/events")}
-          className="bg-gray-900 p-6 rounded-[30px] shadow-xl flex-row items-center justify-between"
+          onPress={() => router.push("/events")}
+          className="bg-gm-charcoal p-6 rounded-[30px] shadow-xl flex-row items-center justify-between"
         >
           <View className="flex-row items-center">
-            <View className="bg-indigo-500 w-12 h-12 rounded-2xl items-center justify-center mr-4">
+            <View className="bg-gm-gold w-12 h-12 rounded-2xl items-center justify-center mr-4">
               <Bell size={24} color="white" />
             </View>
             <View>
               <Text className="text-white text-lg font-bold">
-                {stats.active_events.toString()} Active Events
+                {stats.active_events.toString()} Active Event(s)
               </Text>
               <Text className="text-gray-400 text-xs">
                 Manage guest access codes
               </Text>
             </View>
           </View>
-          <ShieldCheck color="#6366f1" size={28} />
+          <ShieldCheck color="#D4AF37" size={28} />
         </TouchableOpacity>
       </View>
     </ScrollView>
