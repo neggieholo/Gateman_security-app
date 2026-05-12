@@ -3,9 +3,10 @@ import CookieManager from "@react-native-cookies/cookies";
 import * as LocalAuthentication from "expo-local-authentication";
 import { useRouter } from "expo-router";
 import * as SecureStore from "expo-secure-store";
-import { Fingerprint, ScanFace } from "lucide-react-native";
+import { Check, Fingerprint, ScanFace } from "lucide-react-native";
 import React, { useContext, useEffect, useRef, useState } from "react";
 import {
+  ActivityIndicator,
   Alert,
   Image,
   KeyboardAvoidingView,
@@ -34,19 +35,26 @@ export default function LoginScreen() {
   const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState<string>("");
+  const [emailVerified, setEmailVerified] = useState<boolean>(false);
   const [password, setPassword] = useState<string>("");
   const [phone, setPhone] = useState<string>("");
+  const [phoneVerified, setPhoneVerified] = useState<boolean>(false);
   const [formattedPhone, setFormattedPhone] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [isLogin, setIsLogin] = useState<boolean>(true);
   const [isForgot, setIsForgot] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
   const { setUser, setSessionId, setPushToken } = useContext(UserContext);
-  const BASE_URL = `${process.env.EXPO_PUBLIC_BASE_URL}`;
+  const BASE_URL = `${process.env.EXPO_PUBLIC_BASE_URL}/api`;
   const [otp, setOtp] = useState<string[]>(["", "", "", "", "", ""]);
   const [metadata, setMetadata] = useState("");
   const [showOtpInput, setShowOtpInput] = useState(false);
   const phoneInputRef = useRef<PhoneInput>(null);
+  const [verifyingField, setVerifyingField] = useState<
+    "email" | "phone" | null
+  >(null);
+  const [otpLoading, setOtpLoading] = useState(false);
+  const [verifyingOtp, setverifyingOtp] = useState(false);
   const [showBiometricBtn, setShowBiometricBtn] = useState(false);
   const inputRefs = Array(6)
     .fill(0)
@@ -171,66 +179,104 @@ export default function LoginScreen() {
     return false;
   };
 
-  const handleRequestOtp = async () => {
-    const trimmedEmail = email.trim();
+  const handleRequestOtp = async (target: string, type: "email" | "phone") => {
+    let actualTarget = "";
 
-    // 1. Basic Email Validation
-    if (!validateEmail(trimmedEmail)) {
-      Alert.alert("Invalid Email", "Please enter a valid email address.");
-      return;
+    if (type === "email") {
+      actualTarget = email.trim();
+      if (!validateEmail(actualTarget)) {
+        Alert.alert("Invalid Email", "Check your email format.");
+        return;
+      }
+    } else {
+      const checkValid = phoneInputRef.current?.isValidNumber(phone);
+
+      if (!phone || !checkValid) {
+        Alert.alert(
+          "Invalid Phone Number",
+          "The phone number provided is incorrect for the selected country.",
+        );
+        return;
+      }
+
+      actualTarget = formattedPhone;
+      if (!actualTarget || actualTarget.length < 10) {
+        Alert.alert("Invalid Phone", "Please enter a complete phone number.");
+        return;
+      }
     }
 
-    const checkValid = phoneInputRef.current?.isValidNumber(phone);
-
-    if (!phone || !checkValid) {
-      Alert.alert(
-        "Invalid Phone Number",
-        "The phone number provided is incorrect for the selected country.",
-      );
-      return;
-    }
-
-    setLoading(true);
-    setError("");
+    setVerifyingField(type);
+    setOtpLoading(true);
 
     try {
-      const otpRes = await sendOtpApi(trimmedEmail);
+      // Pass the cleaned actualTarget here
+      const otpRes = await sendOtpApi(actualTarget, type);
       if (otpRes.success) {
         setMetadata(otpRes.metadata);
         setShowOtpInput(true);
       } else {
-        setError(otpRes.message || "Failed to send OTP");
+        Alert.alert("Request Failed", otpRes.message);
       }
     } catch (err) {
-      setError("Network error");
+      Alert.alert("Error", "Check your internet connection.");
     } finally {
-      setLoading(false);
+      setOtpLoading(false);
     }
   };
 
   const handleOtpChange = (value: string, index: number) => {
-    // Clean the input to only allow numbers
-    const cleanValue = value.replace(/[^0-9]/g, "");
-
+    const cleanValue = value.replace(/[^0-9]/g, "").slice(-1);
     const newOtp = [...otp];
     newOtp[index] = cleanValue;
-
-    // 1. Update STATE so the user SEES the number in the box
     setOtp(newOtp);
 
-    // 2. Move Focus
     if (cleanValue && index < 5) {
       inputRefs[index + 1].current?.focus();
     }
 
-    // 3. Logic: Use the local variable to avoid the 'async state' delay
-    const finalOtpString = newOtp.join("");
-
-    if (finalOtpString.length === 6) {
-      handleRegister(finalOtpString);
+    if (newOtp.join("").length === 6) {
+      handleOtpVerify(newOtp.join(""));
     }
   };
 
+  const handleOtpVerify = async (finalOtp: string) => {
+    setverifyingOtp(true);
+    try {
+      // const targetValue =
+      //   verifyingField === "phone"
+      //     ? phoneInputRef.current?.getNumberAfterPossiblyEliminatingZero()
+      //         ?.formattedNumber || phone
+      //     : email;
+      const targetValue =
+        verifyingField === "phone" ? formattedPhone : email.trim();
+      const res = await fetch(`${BASE_URL}/admin/verify-otp-only`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          otp: finalOtp,
+          metadata: metadata,
+          target: targetValue,
+        }),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        if (verifyingField === "phone") {
+          setPhoneVerified(true);
+        } else setEmailVerified(true);
+        setShowOtpInput(false);
+        setOtp(["", "", "", "", "", ""]);
+        setVerifyingField(null);
+      } else {
+        setError(data.message || "Invalid Code");
+      }
+    } catch (err) {
+      setError("Verification failed");
+    } finally {
+      setverifyingOtp(false);
+    }
+  };
   // Inside your component
   const handleCancelOtp = () => {
     setOtp(["", "", "", "", "", ""]); // Reset the 6 boxes
@@ -238,13 +284,13 @@ export default function LoginScreen() {
     setShowOtpInput(false); // Close the modal
   };
 
-  const handleRegister = async (newOtp: string) => {
+  const handleRegister = async () => {
     const trimmedEmail = email.trim();
 
-    if (newOtp.length !== 6) {
+    if (!phoneVerified || !emailVerified) {
       Alert.alert(
-        "Invalid Code",
-        "Please enter the 6-digit code sent to your email.",
+        "Unverifed Credentials",
+        "Please verify your email and phone number.",
       );
       return;
     }
@@ -256,8 +302,6 @@ export default function LoginScreen() {
         trimmedEmail,
         password,
         formattedPhone,
-        newOtp,
-        metadata,
       );
       if (response.success) {
         setUser(response.user);
@@ -269,6 +313,20 @@ export default function LoginScreen() {
       setError("Network error");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleEmailChange = (text: string) => {
+    setEmail(text);
+    if (emailVerified) {
+      setEmailVerified(false); // Reset if they type a new character
+    }
+  };
+
+  const handlePhoneChange = (text: string) => {
+    setPhone(text);
+    if (phoneVerified) {
+      setPhoneVerified(false);
     }
   };
 
@@ -404,22 +462,50 @@ export default function LoginScreen() {
                   value={name}
                   onChangeText={setName}
                 />
-                <FormInput
-                  placeholder="Email"
-                  value={email}
-                  onChangeText={setEmail}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  autoComplete="email"
-                />
+                <View>
+                  <FormInput
+                    placeholder="Email"
+                    value={email}
+                    marginBottom="mb-0"
+                    onChangeText={handleEmailChange}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    autoComplete="email"
+                  />
+                  {!showOtpInput && (
+                    <TouchableOpacity
+                      className="w-full flex-row justify-end h-8 mt-1 mb-3"
+                      onPress={() => handleRequestOtp(email, "email")}
+                    >
+                      {otpLoading && verifyingField === "email" ? (
+                        <ActivityIndicator size="small" color="#4f46e5" />
+                      ) : (
+                        <View
+                          className={`rounded-md flex-row p-1 items-center ${emailVerified ? "bg-emerald-500" : "bg-gm-navy"}`}
+                        >
+                          {emailVerified && (
+                            <Check
+                              size={10}
+                              color="white"
+                              style={{ marginRight: 4 }}
+                            />
+                          )}
+                          <Text className="text-white font-bold text-sm">
+                            {emailVerified ? "Verified" : "Verify"}
+                          </Text>
+                        </View>
+                      )}
+                    </TouchableOpacity>
+                  )}
+                </View>
                 <View className="mb-4">
                   <PhoneInput
                     ref={phoneInputRef}
                     defaultValue={phone}
                     defaultCode="NG"
                     layout="first"
-                    onChangeText={setPhone}
+                    onChangeText={handlePhoneChange}
                     onChangeFormattedText={setFormattedPhone}
                     placeholder="Phone Number"
                     containerStyle={{
@@ -449,6 +535,31 @@ export default function LoginScreen() {
                     }}
                     withDarkTheme
                   />
+                  {!showOtpInput && (
+                    <TouchableOpacity
+                      className="w-full flex-row justify-end h-8 mt-1"
+                      onPress={() => handleRequestOtp(phone, "phone")}
+                    >
+                      {otpLoading && verifyingField === "phone" ? (
+                        <ActivityIndicator size="small" color="#4f46e5" />
+                      ) : (
+                        <View
+                          className={`rounded-md flex-row p-1 items-center ${phoneVerified ? "bg-emerald-500" : "bg-gm-navy"}`}
+                        >
+                          {phoneVerified && (
+                            <Check
+                              size={10}
+                              color="white"
+                              style={{ marginRight: 4 }}
+                            />
+                          )}
+                          <Text className="text-white font-bold text-sm">
+                            {phoneVerified ? "Verified" : "Verify"}
+                          </Text>
+                        </View>
+                      )}
+                    </TouchableOpacity>
+                  )}
                 </View>
                 <FormInput
                   placeholder="Password"
@@ -463,7 +574,7 @@ export default function LoginScreen() {
 
                 <Button
                   title={loading ? "Registering..." : "Register"}
-                  onPress={handleRequestOtp}
+                  onPress={() => handleRegister()}
                   disabled={loading}
                 />
 
@@ -533,6 +644,7 @@ export default function LoginScreen() {
           {showBiometricBtn && isLogin && !isForgot && (
             <View className="items-center mt-8">
               <TouchableOpacity
+                disabled={loading}
                 onPress={handleBiometricLogin}
                 className="bg-gm-navy/70 p-4 rounded-full border border-white/40"
               >
@@ -553,11 +665,13 @@ export default function LoginScreen() {
             <View className="flex-1 justify-center items-center bg-black/50 px-6">
               <View className="bg-white w-full rounded-2xl p-8 items-center">
                 <Text className="text-2xl font-bold text-gray-800 mb-2">
-                  Verify Email
+                  Verify {verifyingField === "email" ? "Email" : "Phone Number"}
                 </Text>
                 <Text className="text-gray-500 text-center mb-8">
                   Enter the code sent to {"\n"}
-                  <Text className="font-bold">{email}</Text>
+                  <Text className="font-bold">
+                    {verifyingField === "email" ? email : formattedPhone}
+                  </Text>
                 </Text>
 
                 {/* 6 Individual Boxes */}
@@ -588,7 +702,7 @@ export default function LoginScreen() {
                   ))}
                 </View>
 
-                {loading ? (
+                {verifyingOtp ? (
                   <Text className="text-blue-500 font-bold mb-4">
                     Verifying...
                   </Text>

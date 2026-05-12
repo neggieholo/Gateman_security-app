@@ -112,21 +112,25 @@ export interface RejectionFeedback {
 export interface Invitation {
   id: string;
   guest_name: string;
-  guest_image_url: string | null;
+  guest_image_url?: string;
   access_code: string;
-  invite_type: 'one_time' | 'multi_entry';
-  start_date: any;
-  end_date: any;
-  start_time: any;
-  end_time: any;
-  excluded_dates: string[]; 
-  status: string;
-  actual_checkin: any;
-  actual_checkout: any;
-  actual_checkin_date: any;
-  actual_checkout_date: any;
-  created_at: string;
+  status: 'pending' | 'checked_in' | 'checked_out' | 'overstayed';
+  invite_type: 'single_entry' | 'multi_entry';
+  start_date: string;
+  end_date: string;
+  start_time: string;
+  end_time: string;
+  actual_checkin_date?: string;
+  actual_checkout_date?: string;
   is_cancelled: boolean;
+  excluded_dates?: string[];
+  // Joined Fields
+  resident_name?: string;
+  block?: string;
+  unit?: string;
+  estate_name?: string;
+  lga?: string;
+  town?: string;
 }
 
 // -------------------- API Response Interfaces --------------------

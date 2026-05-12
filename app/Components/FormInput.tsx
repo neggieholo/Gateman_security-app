@@ -1,21 +1,23 @@
 import React from "react";
-import { TextInput, View, TextInputProps } from "react-native";
+import { TextInput, TextInputProps, View } from "react-native";
 
 interface FormInputProps extends TextInputProps {
   placeholder: string;
   value: string;
+  marginBottom?: string;
   onChangeText: (text: string) => void;
 }
 
 export const FormInput: React.FC<FormInputProps> = ({
   placeholder,
   value,
+  marginBottom = "mb-4",
   onChangeText,
   secureTextEntry = false,
   keyboardType = "default",
   ...rest
 }) => (
-  <View className="mb-4">
+  <View className={`${marginBottom}`}>
     <TextInput
       placeholder={placeholder}
       value={value}

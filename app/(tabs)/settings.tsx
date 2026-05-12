@@ -25,7 +25,7 @@ import {
 } from "react-native";
 import PhoneInput from "react-native-phone-number-input";
 import { useUser } from "../UserContext";
-import { sendPofileChangeOtpApi } from "../services/api";
+import { sendProfileOtpApi } from "../services/api";
 
 export default function ResidentSettings() {
   const { user } = useUser();
@@ -143,7 +143,7 @@ export default function ResidentSettings() {
     setError("");
 
     try {
-      const otpRes = await sendPofileChangeOtpApi(
+      const otpRes = await sendProfileOtpApi(
         (target = actualTarget.trim()),
         type,
       );
@@ -395,13 +395,13 @@ export default function ResidentSettings() {
             />
             {!profile.email_verified && isEditing && !showOtpInput && (
               <TouchableOpacity
-                className="w-full flex-row justify-end mb-2"
+                className="w-full flex-row justify-end mb-2 h-12"
                 onPress={() => handleRequestOtp(profile.email, "email")}
               >
                 {otpLoading && verifyingField === "email" ? (
                   <ActivityIndicator size="small" color="#4f46e5" />
                 ) : (
-                  <Text className="bg-indigo-600 font-bold text-sm m-2 rounded-sm p-2 text-white">
+                  <Text className="bg-indigo-600 font-bold text-sm m-2 rounded-sm p-1 text-white">
                     Verify
                   </Text>
                 )}
@@ -453,13 +453,13 @@ export default function ResidentSettings() {
             />
             {!profile.phone_verified && isEditing && !showOtpInput && (
               <TouchableOpacity
-                className="w-full flex-row justify-end"
+                className="w-full flex-row justify-end h-12"
                 onPress={() => handleRequestOtp(profile.phone, "phone")}
               >
                 {otpLoading && verifyingField === "phone" ? (
                   <ActivityIndicator size="small" color="#4f46e5" />
                 ) : (
-                  <Text className="bg-indigo-600 font-bold text-sm m-2 rounded-sm p-2 text-white">
+                  <Text className="bg-indigo-600 font-bold text-sm m-2 rounded-sm p-1 text-white">
                     Verify
                   </Text>
                 )}
@@ -467,7 +467,7 @@ export default function ResidentSettings() {
             )}
           </View>
 
-          <View className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm mt-6">
+          {user?.estate_id && <View className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm mt-6">
             <View className="flex-row items-center justify-between">
               <View className="flex-row items-center flex-1">
                 <View className="bg-indigo-50 p-2 rounded-xl">
@@ -498,7 +498,7 @@ export default function ResidentSettings() {
                 }
               />
             </View>
-          </View>
+          </View>}
         </View>
         <TouchableOpacity
           className="bg-slate-900 p-5 rounded-3xl flex-row items-center justify-between shadow-lg"

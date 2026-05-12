@@ -16,14 +16,12 @@ export const registerSecurity = async (
   email: string,
   password: string,
   phone: string,
-  otp: string,
-  metadata: string,
 ) => {
   try {
     const res = await fetch(`${BASE_URL}/auth/register/security`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password, phone, otp, metadata }),
+      body: JSON.stringify({ name, email, password, phone}),
       credentials: "include", // Ensures the session is set immediately
     });
 
@@ -127,17 +125,24 @@ export const updatePushTokenApi = async (token: string) => {
   }
 };
 
-export const sendOtpApi = async (email: string) => {
+export const sendOtpApi = async (target: string, type: string) => {
   try {
-    const res = await fetch(`${BASE_URL}/auth/otp/send`, {
+    const res = await fetch(`${BASE_URL}/auth/app/send-otp`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email }),
+      body: JSON.stringify({ target, type }),
     });
-    return await res.json();
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      return { success: false, message: data.message || "Server error" };
+    }
+
+    return data;
   } catch (err) {
-    console.log("OTP error:", err);
-    return { success: false, message: "Network error" };
+    console.error("OTP error:", err);
+    return { success: false, message: "Network connection failed" };
   }
 };
 
@@ -500,7 +505,7 @@ export const deleteNotificationApi = async (id: string) => {
   }
 };
 
-export const sendPofileChangeOtpApi = async (target: string, type: string) => {
+export const sendProfileOtpApi = async (target: string, type: string) => {
   try {
     const res = await fetch(`${BASE_URL}/admin/security/send-otp`, {
       method: "POST",
@@ -575,9 +580,9 @@ export const checkAllOut = async (eventId: string) => {
   }
 };
 
-export const getInvitationById = async (id: string) => {
+export const getInvitationById = async (code: string) => {
   try {
-    const response = await fetch(`${BASE_URL}/invitations/${id}`, {
+    const response = await fetch(`${BASE_URL}/invitations/${code}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -585,8 +590,9 @@ export const getInvitationById = async (id: string) => {
       credentials:'include'
     });
 
-    const json = await response.json();
-    return json; 
+    const data = await response.json();
+    console.log('Fetched Invitation:',data)
+    return data; 
   } catch (error) {
     console.error("API Error (getInvitationById):", error);
     return { success: false, message: "Network request failed" };

@@ -23,14 +23,13 @@
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
+        "foregroundImage": "./assets/images/android-icon-foreground.png"
       },
       "permissions": [
         "INTERNET",
         "WAKE_LOCK",
         "ACCESS_NETWORK_STATE",
         "BLUETOOTH",
-        "BIND_TELECOM_CONNECTION_SERVICE",
         "android.permission.FOREGROUND_SERVICE",
         "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO",

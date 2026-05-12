@@ -1,4 +1,4 @@
-import { Calendar } from "lucide-react-native";
+import { Calendar, ShieldCheck } from "lucide-react-native";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -11,8 +11,11 @@ import {
 import EventDetailModal from "../Components/EventDetailModal";
 import { getTodayEvents } from "../services/api";
 import { EstateEvent } from "../services/interfaces";
+import { router } from "expo-router";
+import { useUser } from "../UserContext";
 
 export default function AllEventsScreen() {
+  const {user} = useUser()
   const [events, setEvents] = useState<EstateEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -81,6 +84,25 @@ export default function AllEventsScreen() {
   // const filteredEvents = events.filter((e) =>
   //   e.title.toLowerCase().includes(search.toLowerCase()),
   // );
+
+  if (!user?.estate_id) {
+      return (
+        <View className="flex-1 justify-center items-center p-6 bg-gray-50">
+          <View className="bg-white p-8 rounded-3xl shadow-sm items-center border border-gray-100">
+            <ShieldCheck size={60} color="#4f46e5" />
+            <Text className="text-xl font-bold text-gray-900 mt-4 text-center">
+              Security Access Restricted
+            </Text>
+            <TouchableOpacity
+              className="bg-indigo-600 py-4 px-10 rounded-2xl shadow-md mt-6"
+              onPress={() => router.push("/JoinRequest" as any)}
+            >
+              <Text className="text-white font-bold text-lg">Join an Estate</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      );
+    }
 
   if (loading) return <ActivityIndicator className="flex-1" color="#6366f1" />;
 
