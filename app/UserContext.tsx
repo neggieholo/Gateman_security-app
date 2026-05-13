@@ -1,4 +1,5 @@
 // app/context/UserContext.tsx
+import { Colors } from "@/constants/Colors";
 import * as Notifications from "expo-notifications";
 import { router } from "expo-router";
 import React, {
@@ -8,7 +9,7 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { Alert, Platform } from "react-native";
+import { Alert, Platform, useColorScheme } from "react-native";
 import { io, Socket } from "socket.io-client";
 import { fetchNotifications, getMyApplicationStatus } from "./services/api";
 import {
@@ -16,6 +17,9 @@ import {
   SecurityUser,
   tempNotification,
 } from "./services/interfaces";
+
+
+export type Theme = typeof Colors.light;
 
 interface UserContextType {
   user: Partial<SecurityUser> | null;
@@ -34,6 +38,9 @@ interface UserContextType {
   socket: Socket | null;
   isConnected: boolean;
   loadingNotifications: boolean;
+  isDarkMode: boolean;
+  setIsDarkMode:  (value:boolean) => void;
+  theme: Theme;
 }
 
 export const UserContext = createContext<UserContextType>({
@@ -53,6 +60,9 @@ export const UserContext = createContext<UserContextType>({
   socket: null,
   isConnected: false,
   loadingNotifications: false,
+  isDarkMode: false,
+  setIsDarkMode:  () => {},
+  theme: Colors.light
 });
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
@@ -69,6 +79,14 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const socketRef = useRef<Socket | null>(null);
   const triggerRefresh = () => setRefreshTrigger((prev) => !prev);
   const BASE_URL = `${process.env.EXPO_PUBLIC_BASE_URL}`;
+  const systemColorScheme = useColorScheme();
+  const [isDarkMode, setIsDarkMode] = useState(systemColorScheme === "dark");
+
+  useEffect(() => {
+    setIsDarkMode(systemColorScheme === "dark");
+  }, [systemColorScheme]);
+
+  const theme = isDarkMode ? Colors.dark : Colors.light;
 
   useEffect(() => {
     if (!sessionId) {
@@ -99,17 +117,17 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       setTempnotification(data);
       setBadgeCount(1);
     });
-    
-    newSocket.on("new_notification", (newNotif: notification) => {
-    console.log("🚀 Real-time notification received:", newNotif);
-    setNotifications((prev) => {
-      const exists = prev.find((n) => n.id === newNotif.id);
-      if (exists) return prev;
-      return [newNotif, ...prev];
-    });
 
-    setBadgeCount((prev) => prev + 1);
-  });
+    newSocket.on("new_notification", (newNotif: notification) => {
+      console.log("🚀 Real-time notification received:", newNotif);
+      setNotifications((prev) => {
+        const exists = prev.find((n) => n.id === newNotif.id);
+        if (exists) return prev;
+        return [newNotif, ...prev];
+      });
+
+      setBadgeCount((prev) => prev + 1);
+    });
 
     socketRef.current = newSocket;
 
@@ -235,6 +253,9 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         socket: socketRef.current,
         isConnected,
         loadingNotifications,
+        isDarkMode,
+        setIsDarkMode,
+        theme
       }}
     >
       {children}

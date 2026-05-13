@@ -1,4 +1,12 @@
-import { Mail, MapPin, Phone, ShieldCheck, Users, X } from "lucide-react-native";
+import { router } from "expo-router";
+import {
+  Mail,
+  MapPin,
+  Phone,
+  ShieldCheck,
+  Users,
+  X,
+} from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -14,7 +22,6 @@ import {
 } from "react-native";
 import { getSecurityColleagues } from "../services/api";
 import { useUser } from "../UserContext";
-import { router } from "expo-router";
 
 const { width, height } = Dimensions.get("window");
 
@@ -30,7 +37,7 @@ interface Guard {
 }
 
 export default function SecurityColleagues() {
-  const {user} = useUser()
+  const { user, isDarkMode, theme } = useUser();
   const [allGuards, setAllGuards] = useState<Guard[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -62,7 +69,9 @@ export default function SecurityColleagues() {
   });
 
   const renderGuardItem = ({ item }: { item: Guard }) => (
-    <View className="bg-white p-4 mb-4 rounded-3xl border border-gray-100 shadow-sm">
+    <View
+      className={`${isDarkMode ? "bg-gm-navy border-gm-gold" : "bg-white border-gray-100"} border p-4 mb-4 rounded-3xl shadow-sm`}
+    >
       <View className="flex-row items-center">
         {/* Avatar Section */}
         <TouchableOpacity
@@ -83,18 +92,27 @@ export default function SecurityColleagues() {
 
         {/* Name, Email, Phone Section */}
         <View className="flex-1 ml-4 flex gap-1">
-          <Text className="text-lg font-bold text-gray-900" numberOfLines={1}>
+          <Text
+            className={`text-lg font-montserrat-bold ${isDarkMode ? "text-gm-gold" : "text-gm-navy"}`}
+            numberOfLines={1}
+          >
             {item.name}
           </Text>
 
           <View className="flex-row items-center mt-1">
             <Mail size={12} color="#64748b" />
-            <Text className="text-gray-500 text-md ml-1">{item.email}</Text>
+            <Text
+              className={`${isDarkMode ? "text-gray-50 " : "text-gm-navy"} text-md ml-1 font-oswald-semibold`}
+            >
+              {item.email}
+            </Text>
           </View>
 
           <View className="flex-row items-center mt-0.5">
             <Phone size={12} color="#64748b" />
-            <Text className="text-gray-500 text-md ml-1 font-medium">
+            <Text
+              className={`${isDarkMode ? "text-gray-50 " : "text-gm-navy"} text-md ml-1 font-oswald-semibold`}
+            >
               {item.phone || "No Phone"}
             </Text>
           </View>
@@ -111,15 +129,17 @@ export default function SecurityColleagues() {
 
       {/* On Duty Location Details */}
       {item.is_on_duty && (
-        <View className="mt-4 pt-4 border-t border-gray-50 flex-row justify-between">
+        <View className={`${isDarkMode ? 'border-gm-gold': 'border-gm-navy'} mt-4 pt-4 border-t flex-row justify-between`}>
           <View className="flex-1 pr-2">
-            <Text className="text-[10px] uppercase tracking-widest text-gray-400 font-bold">
+            <Text
+              className={`${isDarkMode ? "text-gray-50 " : "text-gm-navy"} text-[10px] uppercase tracking-widest ml-1 font-oswald-semibold`}
+            >
               Check-in Point
             </Text>
             <View className="flex-row items-center mt-1">
               <MapPin size={12} color="#10b981" />
               <Text
-                className="text-gray-700 text-xs ml-1 font-semibold"
+                className={`${isDarkMode ? "text-gray-50 " : "text-gm-navy"} text-xs ml-1 font-roboto-regular`}
                 numberOfLines={1}
               >
                 {item.check_in_location || "Main Gate"}
@@ -127,14 +147,16 @@ export default function SecurityColleagues() {
             </View>
           </View>
 
-          <View className="flex-1 pl-2 border-l border-gray-100">
-            <Text className="text-[10px] uppercase tracking-widest text-gray-400 font-bold">
+          <View className={`flex-1 pl-2 border-l ${isDarkMode ? 'border-gm-gold': 'border-gm-navy'}`}>
+            <Text
+              className={`${isDarkMode ? "text-gray-50 " : "text-gm-navy"} text-[10px] uppercase tracking-widest ml-1 font-oswald-semibold`}
+            >
               Last Known Location
             </Text>
             <View className="flex-row items-center mt-1">
               <MapPin size={12} color="#6366f1" />
               <Text
-                className="text-gray-700 text-xs ml-1 font-semibold"
+                className={`${isDarkMode ? "text-gray-50 " : "text-gm-navy"} text-xs ml-1 font-roboto-regular`}
                 numberOfLines={1}
               >
                 {item.last_known_location || "Unknown"}
@@ -147,39 +169,41 @@ export default function SecurityColleagues() {
   );
 
   if (!user?.estate_id) {
-      return (
-        <View className="flex-1 justify-center items-center p-6 bg-gray-50">
-          <View className="bg-white p-8 rounded-3xl shadow-sm items-center border border-gray-100">
-            <ShieldCheck size={60} color="#4f46e5" />
-            <Text className="text-xl font-bold text-gray-900 mt-4 text-center">
-              Security Access Restricted
-            </Text>
-            <TouchableOpacity
-              className="bg-indigo-600 py-4 px-10 rounded-2xl shadow-md mt-6"
-              onPress={() => router.push("/JoinRequest" as any)}
-            >
-              <Text className="text-white font-bold text-lg">Join an Estate</Text>
-            </TouchableOpacity>
-          </View>
+    return (
+      <View className="flex-1 justify-center items-center p-6 bg-gray-50">
+        <View className="bg-white p-8 rounded-3xl shadow-sm items-center border border-gray-100">
+          <ShieldCheck size={60} color="#4f46e5" />
+          <Text className="text-xl font-bold text-gray-900 mt-4 text-center">
+            Security Access Restricted
+          </Text>
+          <TouchableOpacity
+            className="bg-indigo-600 py-4 px-10 rounded-2xl shadow-md mt-6"
+            onPress={() => router.push("/JoinRequest" as any)}
+          >
+            <Text className="text-white font-bold text-lg">Join an Estate</Text>
+          </TouchableOpacity>
         </View>
-      );
-    }
+      </View>
+    );
+  }
 
   return (
-    <View className="flex-1 bg-gray-50 p-4">
+    <View
+      className={`${isDarkMode ? "bg-gm-navy/20" : "bg-gray-50 "} flex-1 p-4`}
+    >
       <View className="flex-row justify-between items-center mb-6">
         <View>
-          <Text className="text-2xl font-bold text-gray-900">
+          <Text className="text-2xl font-montserrat-bold text-gm-navy">
             Security Team
           </Text>
-          <Text className="text-gray-500 text-sm">
+          <Text className="text-gm-charcoal font-roboto-regular text-sm">
             {allGuards.length} total colleagues
           </Text>
         </View>
       </View>
 
       {/* Simplified Filter Pill Row */}
-      <View className="flex-row gap-2 mb-6">
+      <View className="flex-row gap-2 mb-6 justify-evenly">
         {[
           { label: "All", value: "ALL" },
           { label: "On Duty", value: "ON" },
@@ -188,10 +212,10 @@ export default function SecurityColleagues() {
           <TouchableOpacity
             key={item.value}
             onPress={() => setFilter(item.value as any)}
-            className={`px-5 py-2.5 rounded-full border ${filter === item.value ? "bg-indigo-600 border-indigo-600" : "bg-white border-gray-200"}`}
+            className={`px-5 py-2.5 rounded-full ${isDarkMode ? 'border border-gm-gold': ''} ${filter === item.value ? "bg-gm-navy" : "bg-white"}`}
           >
             <Text
-              className={`font-bold text-xs ${filter === item.value ? "text-white" : "text-gray-500"}`}
+              className={`font-oswald-semibold text-xs ${filter === item.value ? "text-gm-gold" : "text-gray-500"}`}
             >
               {item.label}
             </Text>

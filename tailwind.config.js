@@ -10,10 +10,16 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        'gm-navy': '#0A1F44',     // From your brand guide
-        'gm-gold': '#D4AF37',     // From your brand guide
-        'gm-charcoal': '#1C1C1E', // From your brand guide
+        'gm-navy': '#0A1F44',     
+        'gm-gold': '#D4AF37',     
+        'gm-charcoal': '#1C1C1E', 
         'gm-white': '#FFFFFF',
+      },
+      fontFamily: {
+        'oswald-semibold': ['Oswald-SemiBold'],
+        'montserrat-bold': ['Montserrat-Bold'],
+        'montserrat-extrabold': ['Montserrat-ExtraBold'],
+        'roboto-regular': ['Roboto-Regular'],
       },
     },
   },

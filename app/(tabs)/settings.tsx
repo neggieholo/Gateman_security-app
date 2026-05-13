@@ -28,7 +28,7 @@ import { useUser } from "../UserContext";
 import { sendProfileOtpApi } from "../services/api";
 
 export default function ResidentSettings() {
-  const { user } = useUser();
+  const { user, isDarkMode, theme } = useUser();
   const BASE_URL = `${process.env.EXPO_PUBLIC_BASE_URL}/api`;
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -312,28 +312,30 @@ export default function ResidentSettings() {
 
   const memoizedHeader = useMemo(
     () => (
-      <View className="p-6 pb-20">
-        <Text className="text-slate-500 font-medium mb-8">
+      <View
+        className={`${isDarkMode ? "bg-gm-navy/20" : "bg-gray-50 "}  p-6 pb-20`}
+      >
+        <Text className={`${isDarkMode ? 'text-gm-charcoal': 'text-slate-500'} text-lg font-oswald-semibold mb-8`}>
           Manage your contact and security info
         </Text>
 
         {/* 1. Locked Identity Section */}
-        <View className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm mb-6">
+        <View className={`${isDarkMode ? 'bg-gm-navy': 'bg-white'} p-6 rounded-3xl border border-slate-100 shadow-sm mb-6`}>
           <View className="flex-row items-center mb-4">
             <Building size={20} color="#4f46e5" />
-            <Text className="ml-2 font-bold text-slate-900 text-lg">
+            <Text className={`ml-2 font-montserrat-bold ${isDarkMode ? 'text-white': 'text-gm-navy'} text-lg`}>
               Residence Info
             </Text>
           </View>
 
           {profileFields.map((item, index) => (
             <View key={index} className="mb-4">
-              <Text className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">
+              <Text className={`text-[10px] font-oswald-semibold ${isDarkMode ? 'text-gm-gold': 'text-slate-400 '} uppercase tracking-widest mb-1`}>
                 {item!.label}
               </Text>
-              <View className="flex-row items-center bg-slate-50 p-4 rounded-2xl border border-slate-100">
+            <View className={`flex-row items-center ${isDarkMode ? 'bg-gm-navy border-gm-gold': 'bg-slate-50 border-slate-100'} p-4 rounded-2xl border`}>
                 {item!.icon}
-                <Text className="ml-3 font-bold text-slate-500">
+                <Text className="ml-3 font-roboto-regular font-bold text-slate-500">
                   {item!.value}
                 </Text>
                 <View className="ml-auto">
@@ -344,11 +346,11 @@ export default function ResidentSettings() {
           ))}
         </View>
 
-        <View className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm mb-6">
+        <View className={`${isDarkMode ? 'bg-gm-navy': 'bg-white'} p-6 rounded-3xl border border-slate-100 shadow-sm mb-6`}>
           <View className="flex-row items-center justify-between mb-4">
             <View className="flex-row items-center">
               <Phone size={20} color="#10b981" />
-              <Text className="ml-2 font-bold text-slate-900 text-lg">
+              <Text className={`ml-2 ${isDarkMode ? 'text-white': 'text-gm-navy'} font-montserrat-bold text-lg`}>
                 Contact Details
               </Text>
             </View>
@@ -369,7 +371,7 @@ export default function ResidentSettings() {
                 setIsEditing(!isEditing);
               }}
             >
-              <Text className="text-indigo-600 font-bold">
+              <Text className="text-red-400 font-roboto-regular font-bold">
                 {isEditing ? "Cancel" : "Edit"}
               </Text>
             </TouchableOpacity>
@@ -378,7 +380,7 @@ export default function ResidentSettings() {
           {/* Email */}
           <View className="mb-4 relative flex">
             <View className="flex-row justify-between mb-1">
-              <Text className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+              <Text className={`text-[10px] font-oswald-semibold ${isDarkMode ? 'text-gm-gold': 'text-slate-400'} uppercase tracking-widest`}>
                 Email Address
               </Text>
               {profile.email_verified && (
@@ -391,7 +393,7 @@ export default function ResidentSettings() {
               editable={isEditing}
               value={profile.email}
               onChangeText={(text) => handleFieldChange("email", text)}
-              className={`p-4 rounded-2xl font-bold ${isEditing ? "bg-white border-2 border-indigo-500 text-slate-900" : "bg-slate-50 text-slate-500"}`}
+              className={`p-4 rounded-2xl font-roboto-regular ${isEditing ? "bg-white border-2 border-indigo-500 text-slate-900" : "bg-slate-50 text-slate-500"}`}
             />
             {!profile.email_verified && isEditing && !showOtpInput && (
               <TouchableOpacity
@@ -412,7 +414,7 @@ export default function ResidentSettings() {
           {/* Phone */}
           <View className="mb-2 relative flex">
             <View className="flex-row justify-between mb-1">
-              <Text className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+              <Text className={`text-[10px] font-oswald-semibold ${isDarkMode ? 'text-gm-gold': 'text-slate-400'} uppercase tracking-widest`}>
                 Phone Number
               </Text>
               {profile.phone_verified && (
@@ -447,7 +449,7 @@ export default function ResidentSettings() {
               }}
               textInputStyle={{
                 color: isEditing ? "#0F172A" : "#64748B",
-                fontWeight: "700",
+                fontFamily: "Roboto-Regular",
                 fontSize: 14,
               }}
             />
@@ -467,50 +469,54 @@ export default function ResidentSettings() {
             )}
           </View>
 
-          {user?.estate_id && <View className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm mt-6">
-            <View className="flex-row items-center justify-between">
-              <View className="flex-row items-center flex-1">
-                <View className="bg-indigo-50 p-2 rounded-xl">
-                  {/* Using a Lock or Scan icon for biometrics */}
-                  <User size={20} color="#4f46e5" />
+          {user?.estate_id && (
+            <View className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm mt-6">
+              <View className="flex-row items-center justify-between">
+                <View className="flex-row items-center flex-1">
+                  <View className="bg-indigo-50 p-2 rounded-xl">
+                    {/* Using a Lock or Scan icon for biometrics */}
+                    <User size={20} color="#4f46e5" />
+                  </View>
+                  <View className="ml-4 flex-1">
+                    <Text className=" font-montserrat-bold text-slate-900 text-md">
+                      Biometric Login
+                    </Text>
+                    <Text className="text-slate-500 text-xs font-roboto-regular">
+                      Use fingerprint or face ID to secure your account
+                    </Text>
+                  </View>
                 </View>
-                <View className="ml-4 flex-1">
-                  <Text className="font-bold text-slate-900 text-lg">
-                    Biometric Login
-                  </Text>
-                  <Text className="text-slate-500 text-xs">
-                    Use fingerprint or face ID to secure your account
-                  </Text>
-                </View>
-              </View>
 
-              <Switch
-                value={profile.biometric_login}
-                disabled={!isEditing}
-                onValueChange={(value) => toggleBiometrics(value)}
-                trackColor={{ false: "#cbd5e1", true: "#4f46e5" }}
-                thumbColor={
-                  Platform.OS === "ios"
-                    ? "#fff"
-                    : profile.biometric_login
+                <Switch
+                  value={profile.biometric_login}
+                  disabled={!isEditing}
+                  onValueChange={(value) => toggleBiometrics(value)}
+                  trackColor={{ false: "#cbd5e1", true: "#4f46e5" }}
+                  thumbColor={
+                    Platform.OS === "ios"
                       ? "#fff"
-                      : "#f4f3f4"
-                }
-              />
+                      : profile.biometric_login
+                        ? "#fff"
+                        : "#f4f3f4"
+                  }
+                />
+              </View>
             </View>
-          </View>}
+          )}
         </View>
         <TouchableOpacity
-          className="bg-slate-900 p-5 rounded-3xl flex-row items-center justify-between shadow-lg"
+          className="bg-gm-navy p-5 rounded-3xl flex-row items-center justify-between shadow-lg"
           onPress={() => router.push("/ChangePassword" as any)}
         >
           <View className="flex-row items-center">
             <View className="bg-white/10 p-2 rounded-xl">
-              <Lock size={20} color="#fff" />
+              <Lock size={20} color="#D4AF37" />
             </View>
-            <Text className="ml-4 font-bold text-white">Change Password</Text>
+            <Text className="ml-4  font-montserrat-bold text-gm-gold">
+              Change Password
+            </Text>
           </View>
-          <ChevronRight size={20} color="#475569" />
+          <ChevronRight size={20} color="#D4AF37" />
         </TouchableOpacity>
 
         {isEditing && (

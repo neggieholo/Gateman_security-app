@@ -16,6 +16,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { checkAllOut, toggleGuestStatus } from "../services/api";
 import { EstateEvent } from "../services/interfaces";
+import { useUser } from "../UserContext";
 
 const EventDetailModal = ({
   event,
@@ -26,6 +27,7 @@ const EventDetailModal = ({
   onClose: () => void;
   onRefresh: () => void;
 }) => {
+  const { theme, isDarkMode } = useUser();
   const [activeTab, setActiveTab] = useState("details"); // 'details' | 'guests'
   const [searchQuery, setSearchQuery] = useState("");
   const [processingId, setProcessingId] = useState<string | null>(null);
@@ -101,25 +103,33 @@ const EventDetailModal = ({
 
   return (
     <Modal animationType="slide" transparent={false} visible={true}>
-      <SafeAreaView className="flex-1 bg-white">
+      <SafeAreaView
+        className={`flex-1 ${isDarkMode ? "bg-gm-navy/20" : "bg-white"}`}
+      >
         {/* Modal Header */}
-        <View className="p-4 flex-row items-center border-b border-slate-100">
+        <View
+          className={`${isDarkMode ? "bg-gm-navy" : "bg-white"} p-4 flex-row items-center border-b border-slate-100`}
+        >
           <TouchableOpacity onPress={onClose} className="p-2">
-            <ChevronLeft size={24} color="#0f172a" />
+            <ChevronLeft size={24} color={theme.accent} />
           </TouchableOpacity>
-          <Text className="flex-1 text-center font-bold text-lg text-slate-900 mr-8">
+          <Text
+            className={`flex-1 text-center font-montserrat-extrabold text-lg mr-8 ${isDarkMode ? "text-gm-gold" : "text-gm-navy"}`}
+          >
             Event Management
           </Text>
         </View>
 
         {/* Tab Switcher */}
-        <View className="flex-row gap-3 p-2 bg-slate-100 mx-6 mt-4 rounded-2xl">
+        <View
+          className={`${isDarkMode ? "bg-gm-navy" : "bg-slate-100"} flex-row gap-3 p-2 mx-6 mt-4 rounded-2xl`}
+        >
           <TouchableOpacity
             onPress={() => setActiveTab("details")}
             className={`flex-1 p-4 rounded-3xl border-2 flex-row items-center justify-center ${activeTab === "details" ? "bg-white" : ""}`}
           >
             <Text
-              className={`text-center font-bold ${activeTab === "details" ? "text-indigo-600" : "text-slate-400"}`}
+              className={`text-center font-oswald-semibold ${activeTab === "details" ? "text-gm-navy" : isDarkMode ? "text-white" : "text-slate-400"}`}
             >
               Details
             </Text>
@@ -130,7 +140,7 @@ const EventDetailModal = ({
             className={`flex-1 p-4 rounded-3xl border-2 flex-row items-center justify-center ${activeTab === "guests" ? "bg-white" : ""}`}
           >
             <Text
-              className={`text-center font-bold ${activeTab === "guests" ? "text-indigo-600" : "text-slate-400"}`}
+              className={`text-center font-oswald-semibold ${activeTab === "guests" ? "text-gm-navy" : isDarkMode ? "text-white" : "text-slate-400"}`}
             >
               Guest List
             </Text>
@@ -154,12 +164,14 @@ const EventDetailModal = ({
                 label="Registered"
                 value={event.registered_count}
                 color="text-indigo-600"
+                isDarkMode={isDarkMode}
               />
 
               <StatBox
                 label="Currently In"
                 value={event.currently_inside}
                 color="text-emerald-600"
+                isDarkMode={isDarkMode}
               />
 
               <StatBox
@@ -170,52 +182,56 @@ const EventDetailModal = ({
                   event.total_checked_out
                 }
                 color="text-blue-600"
+                isDarkMode={isDarkMode}
               />
 
               <StatBox
                 label="Checked Out"
                 value={event.total_checked_out}
                 color="text-orange-600"
+                isDarkMode={isDarkMode}
               />
             </View>
 
-            <Text className="text-slate-400 font-bold uppercase text-[10px] tracking-widest mb-2">
+            <Text className="text-slate-400 font-montserrat-bold uppercase text-[10px] tracking-widest mb-2">
               Event Title
             </Text>
-            <Text className="text-lg font-bold text-slate-900 mb-6">
+            <Text className="text-lg font-roboto-regular text-slate-900 mb-6">
               {event.title}
             </Text>
 
-            <Text className="text-slate-400 font-bold uppercase text-[10px] tracking-widest mb-2">
+            <Text className="text-slate-400 font-montserrat-bold  uppercase text-[10px] tracking-widest mb-2">
               Venue Detail
             </Text>
-            <Text className="text-slate-900 font-bold text-lg mb-6">
+            <Text className="text-slate-900 font-roboto-regular text-lg mb-6">
               {event.venue_detail || "No detail provided"}
             </Text>
 
-            <Text className="text-slate-400 font-bold uppercase text-[10px] tracking-widest mb-2">
-              Description
-            </Text>
-            <Text className="text-slate-600 leading-6 mb-6">
-              {event.description}
-            </Text>
-
-            <Text className="text-slate-400 font-bold uppercase text-[10px] tracking-widest mb-2">
+            <Text className="text-slate-400 font-montserrat-bold  uppercase text-[10px] tracking-widest mb-2">
               Time
             </Text>
-            <Text className="text-slate-600 text-sm font-bold uppercase">
+            <Text className="text-slate-600 text-sm font-roboto-regular uppercase mb-6">
               {event.start_time} - {event.end_time}
+            </Text>
+
+            <Text className="text-slate-400 font-montserrat-bold  uppercase text-[10px] tracking-widest">
+              Description
+            </Text>
+            <Text className="text-slate-600 font-roboto-regular leading-6 mb-6">
+              {event.description}
             </Text>
           </ScrollView>
         ) : (
           /* TAB 2: GUEST LIST WITH SEARCH */
           <View className="flex-1 p-6">
-            <View className="flex-row items-center bg-slate-100 px-4 rounded-2xl mb-4 border border-slate-200">
-              <Search size={18} color="#94a3b8" />
+            <View
+              className={`flex-row items-center  px-4 rounded-2xl mb-4 border border-slate-200 ${isDarkMode ? "bg-gm-navy" : "bg-slate-100"}`}
+            >
+              <Search size={18} color={isDarkMode ? "#D4AF37" : "#94a3b8"} />
               <TextInput
                 placeholder="Search name or access code..."
                 placeholderTextColor="#94a3b8"
-                className="flex-1 h-12 ml-2 font-bold text-slate-700"
+                className={`flex-1 h-12 ml-2 font-roboto-regular ${isDarkMode ? 'text-gm-gold' : 'text-gm-navy'}`}
                 value={searchQuery}
                 onChangeText={setSearchQuery}
               />
@@ -228,13 +244,13 @@ const EventDetailModal = ({
                   onPress={() => setFilterStatus(status)}
                   className={`flex-1 py-2 rounded-xl border ${
                     filterStatus === status
-                      ? "bg-indigo-600 border-indigo-600"
+                      ? "bg-gm-navy border-gm-gold"
                       : "bg-white border-slate-200"
                   }`}
                 >
                   <Text
-                    className={`text-center text-[10px] font-bold uppercase ${
-                      filterStatus === status ? "text-white" : "text-slate-400"
+                    className={`text-center text-[10px]  font-oswald-semibold uppercase ${
+                      filterStatus === status ? "text-gm-gold" : "text-slate-400"
                     }`}
                   >
                     {status === "inside"
@@ -252,7 +268,7 @@ const EventDetailModal = ({
               onPress={handleCheckAllOut}
               className="bg-rose-50 border border-rose-100 p-3 rounded-2xl mb-4 flex-row justify-center items-center"
             >
-              <Text className="text-rose-600 font-bold text-xs uppercase tracking-widest">
+              <Text className="text-rose-600 font-oswald-semibold text-xs uppercase tracking-widest">
                 Check All Out
               </Text>
             </TouchableOpacity>
@@ -271,9 +287,9 @@ const EventDetailModal = ({
                 const isCheckedIn = item.is_checked_in;
                 const isCheckedOut = item.is_checked_out;
                 return (
-                  <View className="flex-row items-center justify-between p-4 bg-white border border-slate-50 rounded-2xl mb-2 shadow-sm">
+                  <View className={`flex-row items-center justify-between p-4 ${isDarkMode ? 'bg-gm-navy':'bg-white border-slate-200'} border rounded-2xl mb-2 shadow-sm`}>
                     <View>
-                      <Text className="font-bold text-[14px] text-slate-900">
+                      <Text className={`font-oswald-semibold text-[14px] ${isDarkMode ? 'text-white':'text-gm-navy'}`}>
                         {item.guest_name}
                       </Text>
                       <Text
@@ -281,7 +297,7 @@ const EventDetailModal = ({
                           fontFamily:
                             Platform.OS === "ios" ? "Courier" : "monospace",
                         }}
-                        className="text-[13px] text-indigo-600 font-black uppercase tracking-widest"
+                        className={`text-[13px] ${isDarkMode ? 'text-gm-gold':'text-indigo-600 '} font-roboto-regular uppercase tracking-widest"`}
                       >
                         {item.guest_code}
                       </Text>
@@ -289,7 +305,7 @@ const EventDetailModal = ({
                     <TouchableOpacity
                       disabled={isCheckedOut || processingId === item.id}
                       onPress={() => handleStatusToggle(item.id)}
-                      className={`px-4 py-2 rounded-xl flex-row items-center ${
+                      className={`px-4 py-2 rounded-xl flex-row items-center font-montserrat-bold ${
                         isCheckedOut
                           ? "bg-slate-100"
                           : isCheckedIn
@@ -326,14 +342,18 @@ const StatBox = ({
   label,
   value,
   color,
+  isDarkMode,
 }: {
   label: string;
   value: string | number;
   color: string;
+  isDarkMode: boolean;
 }) => (
-  <View className="bg-slate-50 p-4 rounded-2xl w-[48%] mb-4 border border-slate-100 items-center">
+  <View
+    className={`${isDarkMode ? "bg-gm-navy border-gm-navy" : "bg-white border-slate-100"} p-4 rounded-2xl w-[48%] mb-4 border items-center`}
+  >
     <Text className={`${color} text-2xl font-black`}>{value}</Text>
-    <Text className="text-slate-400 text-[9px] font-bold uppercase">
+    <Text className="text-slate-400 text-[9px] font-roboto-regular uppercase">
       {label}
     </Text>
   </View>

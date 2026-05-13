@@ -40,7 +40,7 @@ import { Invitation } from "../services/interfaces";
 import { useUser } from "../UserContext";
 
 export default function GatePassesView() {
-  const { user } = useUser();
+  const { user, isDarkMode, theme } = useUser();
   const [permission, requestPermission] = useCameraPermissions();
 
   // Tab & Filter States
@@ -447,7 +447,7 @@ export default function GatePassesView() {
 
     return (
       <View
-        className={`bg-white rounded-[32px] border-t-4 mb-8 shadow-md p-5 ${isMultiEntry ? "border-indigo-500" : "border-emerald-500"} ${invite.is_cancelled ? "opacity-60" : ""}`}
+        className={`${isDarkMode ? "bg-black" : "bg-white"} rounded-[32px] border-t-4 mb-8 shadow-md p-5 ${isMultiEntry ? "border-indigo-500" : "border-emerald-500"} ${invite.is_cancelled ? "opacity-60" : ""}`}
       >
         <View className="flex-row justify-between items-start mb-4">
           <View className="flex-row items-center flex-1">
@@ -463,7 +463,7 @@ export default function GatePassesView() {
             </View>
             <View className="ml-3 flex-1">
               <Text
-                className="font-bold text-slate-900 text-lg"
+                className={`${isDarkMode ? "text-white" : "text-slate-900 "} font-bold text-lg`}
                 numberOfLines={1}
               >
                 {invite.guest_name}
@@ -477,7 +477,7 @@ export default function GatePassesView() {
             </View>
           </View>
           <View className={`${status.container} px-3 py-1 rounded-lg`}>
-            <Text className={`${status.text} text-[10px] font-black uppercase`}>
+            <Text className={`${status.text} text-[10px] font-oswald-semibold uppercase`}>
               {status.label}
             </Text>
           </View>
@@ -529,7 +529,7 @@ export default function GatePassesView() {
 
           <TouchableOpacity
             onPress={() => setSelectedInvite(invite)}
-            className="w-14 h-14 bg-slate-50 rounded-2xl items-center justify-center border border-slate-100 active:bg-slate-200"
+            className={`${isDarkMode ? "bg-black" : "bg-slate-50"} w-14 h-14 rounded-2xl items-center justify-center border border-slate-100 active:bg-slate-200`}
           >
             <Info color="#94a3b8" size={24} />
           </TouchableOpacity>
@@ -664,19 +664,21 @@ export default function GatePassesView() {
   }
 
   return (
-    <View className="flex-1 bg-gray-50">
+    <View className={`flex-1 ${isDarkMode ? "bg-gm-navy/20" : "bg-gray-50 "}`}>
       {/* HEADER TABS */}
-      <View className="flex-row bg-white p-4 shadow-sm border-b border-slate-100">
+      <View
+        className={`flex-row ${isDarkMode ? "bg-black" : "border-slate-100 bg-white"} border-b p-4 shadow-sm`}
+      >
         <TouchableOpacity
           onPress={() => setActiveTab("verify")}
-          className={`flex-1 flex-row justify-center py-4 border-b-4 ${activeTab === "verify" ? "border-indigo-600" : "border-transparent"}`}
+          className={`flex-1 flex-row justify-center items-center py-4 border-b-4 ${activeTab === "verify" ? (isDarkMode ? "border-gm-gold" : "border-gm-navy") : "border-transparent"}`}
         >
           <QrCode
             size={20}
-            color={activeTab === "verify" ? "#4f46e5" : "#94a3b8"}
+            color={activeTab === "verify" ? theme.accent : "#94a3b8"}
           />
           <Text
-            className={`ml-2 font-bold ${activeTab === "verify" ? "text-indigo-900" : "text-slate-400"}`}
+            className={`ml-2 font-oswald-semibold tracking-widest ${activeTab === "verify" ? (isDarkMode ? "text-gm-gold" : "text-gm-navy") : "text-slate-400"}`}
           >
             Verify
           </Text>
@@ -686,14 +688,14 @@ export default function GatePassesView() {
             setActiveTab("logs");
             onRefresh();
           }}
-          className={`flex-1 flex-row justify-center py-4 border-b-4 ${activeTab === "logs" ? "border-indigo-600" : "border-transparent"}`}
+          className={`flex-1 flex-row justify-center items-center py-4 border-b-4 ${activeTab === "logs" ? (isDarkMode ? "border-gm-gold" : "border-gm-navy") : "border-transparent"}`}
         >
           <ClipboardList
             size={20}
-            color={activeTab === "logs" ? "#4f46e5" : "#94a3b8"}
+            color={activeTab === "logs" ? theme.accent : "#94a3b8"}
           />
           <Text
-            className={`ml-2 font-bold ${activeTab === "logs" ? "text-indigo-900" : "text-slate-400"}`}
+            className={`ml-2 font-oswald-semibold tracking-widest ${activeTab === "logs" ? (isDarkMode ? "text-gm-gold" : "text-gm-navy") : "text-slate-400"}`}
           >
             Logs
           </Text>
@@ -704,7 +706,7 @@ export default function GatePassesView() {
         {/* SCANNER / SEARCH SECTION */}
         {activeTab === "verify" && (
           <ScrollView
-            className="flex-1 bg-slate-50 pt-2"
+            className="flex-1 pt-2"
             contentContainerStyle={{
               paddingBottom: 100,
             }}
@@ -712,18 +714,21 @@ export default function GatePassesView() {
           >
             {fetching ? (
               <View className="flex-1 justify-center items-center py-20">
-                <View className="bg-white p-10 rounded-[40px] border border-slate-50 items-center">
-                  <ActivityIndicator size="large" color="#4f46e5" />
-                  <Text className="mt-6 text-slate-900 font-black uppercase tracking-[2px] text-xs">
+                <View
+                  className={`${isDarkMode ? "bg-gm-navy" : "bg-white"} p-10 rounded-[40px] border border-slate-50 items-center`}
+                >
+                  <ActivityIndicator size="large" color={theme.accent} />
+                  <Text
+                    className={`${isDarkMode ? "text-gm-gold" : "text-gm-charcoal"} mt-6 font-roboto-regular uppercase tracking-[2px] text-xs`}
+                  >
                     Verifying Code...
-                  </Text>
-                  <Text className="mt-2 text-slate-400 text-[10px] font-bold">
-                    GATEMAN SECURITY PROTOCOL
                   </Text>
                 </View>
               </View>
             ) : searchedInvite ? (
-              <View className="bg-white rounded-[32px] p-6 border-2 border-emerald-500">
+              <View
+                className={`${isDarkMode ? "bg-gm-navy" : "bg-white"} rounded-[32px] p-6 border-2 border-emerald-500`}
+              >
                 {/* Header Section */}
                 <View className="items-center mb-6">
                   <View className="bg-emerald-100 p-3 rounded-full mb-2">
@@ -747,7 +752,7 @@ export default function GatePassesView() {
                       setSearchedInvite(null);
                       setSearchTerm("");
                     }}
-                    className="bg-slate-100 px-6 py-5 rounded-2xl items-center border border-slate-200"
+                    className="px-6 py-5 rounded-2xl items-center border border-slate-200"
                   >
                     <X color="red" size={20} />
                   </TouchableOpacity>
@@ -755,41 +760,52 @@ export default function GatePassesView() {
               </View>
             ) : !showScanner ? (
               <View className="flex items-center justify-center gap-16 mb-6">
-                <View className="h-fit w-full flex gap-3 mt-2">
-                  <Text className="text-slate-500 font-bold ml-1 text-center text-xl">
+                <View className="h-fit w-full flex gap-3 mt-2 ">
+                  <Text className="text-gm-charcoal font-montserrat-bold ml-1 text-center text-xl">
                     Enter Code
                   </Text>
-                  <View className="flex-row items-center bg-white h-16 px-4 rounded-2xl border border-slate-200 gap-5">
+                  <View
+                    className={`flex-row items-center ${isDarkMode ? "bg-gm-navy" : "bg-white"} h-16 px-4 rounded-2xl border border-slate-200 gap-5`}
+                  >
                     <TextInput
                       placeholder="Enter Access Code..."
                       placeholderTextColor="#cbd5e1"
                       value={searchTerm}
                       onChangeText={setSearchTerm}
-                      className="flex-1 ml-3 font-bold text-lg text-slate-800"
+                      className={`flex-1 ml-3 font-roboto-regular text-lg ${isDarkMode ? "text-white" : "text-gm-charcoal"}`}
                       keyboardType="numeric"
                     />
                     {searchTerm !== "" && (
-                      <TouchableOpacity onPress={() => setSearchTerm("")}>
+                      <TouchableOpacity
+                        className="mx-2"
+                        onPress={() => setSearchTerm("")}
+                      >
                         <X color="red" size={20} />
                       </TouchableOpacity>
                     )}
                     <TouchableOpacity
+                      className="mx-2"
                       onPress={() => handleFinalSearch(searchTerm)}
                     >
-                      <Search color="#94a3b8" size={20} />
+                      <Search color={theme.accent} size={20} />
                     </TouchableOpacity>
                   </View>
                 </View>
-                <Text className="font-black text-slate-300 my-1">OR</Text>
+                <Text className=" font-montserrat-bold text-slate-500 my-1">
+                  OR
+                </Text>
                 <View className="flex items-center gap-2">
-                  <Text className="text-slate-500 font-bold text-xl">
+                  <Text className="text-gm-charcoal font-montserrat-bold text-xl">
                     Scan QR
                   </Text>
                   <TouchableOpacity
                     onPress={() => setShowScanner(true)}
-                    className="w-20 h-20 bg-slate-900 rounded-[24px] items-center justify-center shadow-lg active:scale-95"
+                    className={`w-20 h-20 ${isDarkMode ? "bg-gm-navy" : "bg-slate-200"} rounded-[24px] items-center justify-center shadow-lg active:scale-95`}
                   >
-                    <QrCode color="white" size={32} />
+                    <QrCode
+                      color={isDarkMode ? "#D4AF37" : "black"}
+                      size={32}
+                    />
                   </TouchableOpacity>
                 </View>
               </View>
@@ -862,24 +878,28 @@ export default function GatePassesView() {
                 count={counts.all}
                 active={logFilter === "all"}
                 onPress={() => setLogFilter("all")}
+                isDarkMode={isDarkMode}
               />
               <FilterPill
                 label="Inside"
                 count={counts.inside}
                 active={logFilter === "inside"}
                 onPress={() => setLogFilter("inside")}
+                isDarkMode={isDarkMode}
               />
               <FilterPill
                 label="Left"
                 count={counts.departed}
                 active={logFilter === "departed"}
                 onPress={() => setLogFilter("departed")}
+                isDarkMode={isDarkMode}
               />
               <FilterPill
                 label="Stay"
                 count={counts.overstayed}
                 active={logFilter === "overstayed"}
                 onPress={() => setLogFilter("overstayed")}
+                isDarkMode={isDarkMode}
               />
             </View>
 
@@ -921,13 +941,13 @@ export default function GatePassesView() {
   );
 }
 
-const FilterPill = ({ label, count, active, onPress }: any) => (
+const FilterPill = ({ label, count, active, onPress, isDarkMode }: any) => (
   <TouchableOpacity
     onPress={onPress}
-    className={`mr-2 px-4 py-2 rounded-xl border ${active ? "bg-indigo-600 border-indigo-600" : "bg-white border-slate-200"}`}
+    className={`mr-2 px-4 py-2 rounded-xl ${isDarkMode ? "border border-gm-gold" : ""} ${active ? "bg-gm-navy" : "bg-white"}`}
   >
     <Text
-      className={`text-[11px] font-bold ${active ? "text-white" : "text-slate-500"}`}
+      className={`text-[11px] font-oswald-semibold ${active ? "text-gm-gold" : "text-slate-500"}`}
     >
       {label} ({count})
     </Text>

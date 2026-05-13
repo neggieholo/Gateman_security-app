@@ -36,7 +36,7 @@ export default function NotificationsPage() {
   // }, []);
   useEffect(() => {
     triggerRefresh();
-  }, [triggerRefresh]);
+  }, []);
 
   useEffect(() => {
     const handleRead = async () => {

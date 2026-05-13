@@ -50,7 +50,7 @@ export default function SecurityTabsLayout() {
   const DashboardHeaderRight = () => (
     <View className="flex-row gap-7 m-2">
       <TouchableOpacity onPress={() => router.push("/NotificationsPage")}>
-        <Ionicons name="notifications-outline" size={24} color="#FFFFFF" />
+        <Ionicons name="notifications-outline" size={24} color="#D4AF37" />
         {badgeCount > 0 && (
           <View
             className="absolute -top-1 -right-1 bg-red-500 rounded-full flex items-center justify-center border-2 border-[#2563eb]"
@@ -65,9 +65,9 @@ export default function SecurityTabsLayout() {
 
       <TouchableOpacity onPress={handleLogout} disabled={loggingOut}>
         {loggingOut ? (
-          <ActivityIndicator size="small" color="#FFFFFF" />
+          <ActivityIndicator size="small" color="#D4AF37" />
         ) : (
-          <Ionicons name="log-out-outline" size={24} color="#FFFFFF" />
+          <Ionicons name="log-out-outline" size={24} color="#D4AF37" />
         )}
       </TouchableOpacity>
     </View>
@@ -79,12 +79,12 @@ export default function SecurityTabsLayout() {
         initialRouteName="dashboard"
         screenOptions={{
           headerStyle: { backgroundColor: "#0A1F44" },
-          headerTintColor: "#FFFFFF",
-          headerTitleStyle: { fontWeight: "bold" },
+          headerTintColor: "#D4AF37",
+          headerTitleStyle: { fontFamily: "Montserrat-ExtraBold" },
           headerTitleAlign: "center",
           tabBarStyle: { backgroundColor: "#0A1F44", borderTopWidth: 0 },
-          tabBarActiveTintColor: "#D4AF37",
-          tabBarInactiveTintColor: "#BFDBFE",
+          tabBarActiveTintColor: "#BFDBFE",
+          tabBarInactiveTintColor: "#D4AF37",
           // REMOVED headerRight from here so it's not global
         }}
       >
@@ -94,8 +94,7 @@ export default function SecurityTabsLayout() {
             headerTitle: "",
             headerLeft: () => (
               <View style={{ marginLeft: 15 }}>
-                <Text
-                  style={{ color: "white", fontSize: 18, fontWeight: "600" }}
+                <Text className="text-gm-gold text-lg font-montserrat-extrabold"
                 >
                   Hi, {user?.name || "Security"}
                 </Text>

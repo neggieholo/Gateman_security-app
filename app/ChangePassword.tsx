@@ -61,14 +61,14 @@ export default function ChangePasswordScreen() {
     >
       <ScrollView contentContainerStyle={{ flexGrow: 1 }} className="p-6">
         <View className="mb-8">
-          <Text className="text-gray-500 mt-1">Ensure your account stays secure</Text>
+          <Text className="text-gray-500 mt-1 font-oswald-semibold text-lg">Ensure your account stays secure</Text>
         </View>
 
         {/* Current Password */}
         <View className="mb-5">
-          <Text className="text-sm font-semibold text-gray-700 mb-2">Current Password</Text>
+          <Text className="text-sm font-oswald-semibold text-gray-700 mb-2">Current Password</Text>
           <TextInput 
-            className="bg-white border border-gray-200 p-4 rounded-2xl text-gray-900 shadow-sm"
+            className="bg-white border border-gray-200 p-4 rounded-2xl text-gray-900 font-roboto-regular shadow-sm"
             placeholder="Enter current password"
             placeholderTextColor="#9ca3af"
             secureTextEntry 
@@ -79,9 +79,9 @@ export default function ChangePasswordScreen() {
 
         {/* New Password */}
         <View className="mb-5">
-          <Text className="text-sm font-semibold text-gray-700 mb-2">New Password</Text>
+          <Text className="text-sm font-oswald-semibold text-gray-700 mb-2">New Password</Text>
           <TextInput 
-            className="bg-white border border-gray-200 p-4 rounded-2xl text-gray-900 shadow-sm"
+            className="bg-white border border-gray-200 p-4 rounded-2xl text-gray-900 font-roboto-regular shadow-sm"
             placeholder="Minimum 6 characters"
             placeholderTextColor="#9ca3af"
             secureTextEntry 
@@ -92,9 +92,9 @@ export default function ChangePasswordScreen() {
 
         {/* Confirm Password */}
         <View className="mb-8">
-          <Text className="text-sm font-semibold text-gray-700 mb-2">Confirm New Password</Text>
+          <Text className="text-sm font-oswald-semibold text-gray-700 mb-2">Confirm New Password</Text>
           <TextInput 
-            className="bg-white border border-gray-200 p-4 rounded-2xl text-gray-900 shadow-sm"
+            className="bg-white border border-gray-200 p-4 rounded-2xl text-gray-900 font-roboto-regular shadow-sm"
             placeholder="Repeat new password"
             placeholderTextColor="#9ca3af"
             secureTextEntry 
@@ -113,7 +113,7 @@ export default function ChangePasswordScreen() {
           {loading ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text className="text-white font-bold text-lg">Update Password</Text>
+            <Text className="text-white font-montserrat-bold text-lg">Update Password</Text>
           )}
         </TouchableOpacity>
       </ScrollView>

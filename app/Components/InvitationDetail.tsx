@@ -10,6 +10,7 @@ import {
   View
 } from "react-native";
 import { Invitation } from "../services/interfaces";
+import { useUser } from "../UserContext";
 
 interface InvitationDetailProps {
   invite: Invitation | null;
@@ -28,6 +29,7 @@ const InvitationDetailModal = ({
   onClose,
   statusDetails,
 }: InvitationDetailProps) => {
+  const{isDarkMode, theme} = useUser()
   const [isImageZoomed, setIsImageZoomed] = useState(false);
   if (!invite) return null;
 
@@ -73,7 +75,7 @@ const InvitationDetailModal = ({
           onPress={onClose}
         >
           <Pressable
-            className="bg-white w-full max-w-sm rounded-[50px] overflow-hidden shadow-2xl"
+            className={`${isDarkMode ? 'bg-black':'bg-white'} w-full max-w-sm rounded-[50px] overflow-hidden shadow-2xl`}
             onPress={(e) => e.stopPropagation()}
           >
             <View className={`h-3 ${topBarColor}`} />
@@ -98,7 +100,7 @@ const InvitationDetailModal = ({
                 </TouchableOpacity>
 
                 <Text
-                  className={`text-2xl font-black text-slate-900 text-center ${isCancelled ? "opacity-30 line-through" : ""}`}
+                  className={`text-2xl font-black ${isDarkMode ? 'text-white':'text-gm-navy'} text-center ${isCancelled ? "opacity-30 line-through" : ""}`}
                 >
                   {invite.guest_name}
                 </Text>
@@ -107,29 +109,29 @@ const InvitationDetailModal = ({
                   className={`${statusDetails?.container || "bg-slate-100"} px-4 py-1.5 rounded-full mt-3 mb-6`}
                 >
                   <Text
-                    className={`${statusDetails?.text || "text-slate-600"} text-[10px] font-black uppercase`}
+                    className={`${statusDetails?.text || "text-slate-600"} text-[10px] font-oswald-semibold uppercase`}
                   >
                     {statusDetails?.label}
                   </Text>
                 </View>
 
                 {/* RE-ORDERED DESTINATION CARD */}
-                <View className="w-full bg-slate-50 rounded-[30px] p-5 mb-6 border border-slate-100">
-                  <Text className="text-[10px] font-bold text-slate-400 uppercase">
+                <View className={`${isDarkMode ? "":"bg-slate-50"} w-full  rounded-[30px] p-5 mb-6 border border-slate-100`}>
+                  <Text className="text-[10px] text-slate-400 uppercase font-montserrat-bold">
                     Visiting Resident
                   </Text>
                   <View className="flex-row items-center mb-1">
                     <Home size={16} color="#6366f1" />
-                    <Text className="ml-2 text-slate-900 font-black text-base">
+                    <Text className={`${isDarkMode ? 'text-white':'text-gm-navy'} ml-2 tracking-widest text-base font-montserrat-extrabold`}>
                       {invite.resident_name || "Resident"}
                     </Text>
                   </View>
 
                   {/* Estate name directly below Resident */}
-                  <Text className="text-[10px] font-black text-indigo-600 uppercase mb-3 ml-6">
+                  <Text className="text-[10px] text-indigo-600 uppercase mb-3 ml-6 tracking-widest font-oswald-semibold ">
                     {invite.estate_name || "Estate Security"}
                   </Text>
-                  <Text className="text-[10px] font-black text-indigo-600 uppercase mb-3 ml-6">
+                  <Text className="text-[10px] text-indigo-600 uppercase mb-3 ml-6 tracking-widest font-oswald-semibold ">
                     {invite.town} / {invite.lga}
                   </Text>
 
@@ -137,17 +139,17 @@ const InvitationDetailModal = ({
                   <View className="flex-row items-center bg-white p-3 rounded-2xl border border-slate-100">
                     <MapPin size={14} color="#64748b" />
                     <View className="flex-row ml-2 items-center">
-                      <Text className="text-slate-400 font-bold text-[10px] uppercase">
+                      <Text className="text-gm-charcoal font-roboto-regular font-bold text-[10px] uppercase">
                         Block:
                       </Text>
-                      <Text className="text-slate-900 font-bold text-xs ml-1 mr-3">
+                      <Text className="text-slate-900 font-roboto-regular text-xs ml-1 mr-3">
                         {invite.block || "N/A"}
                       </Text>
 
-                      <Text className="text-slate-400 font-bold text-[10px] uppercase">
+                      <Text className="text-gm-charcoal font-roboto-regular font-bold text-[10px] uppercase">
                         Unit:
                       </Text>
-                      <Text className="text-slate-900 font-bold text-xs ml-1">
+                      <Text className="text-slate-900 font-roboto-regular text-xs ml-1">
                         {invite.unit || "N/A"}
                       </Text>
                     </View>
@@ -172,14 +174,17 @@ const InvitationDetailModal = ({
                     label="Type"
                     value={invite.invite_type.replace("_", " ")}
                     isCaps
+                    isDarkMode={isDarkMode}
                   />
                   <DetailRow
                     label="Validity"
                     value={`${formatDate(invite.start_date)} ${isMultiEntry ? `→ ${formatDate(invite.end_date)}` : ""}`}
+                    isDarkMode={isDarkMode}
                   />
                   <DetailRow
                     label="Window"
                     value={`${formatTime(invite.start_time)} - ${formatTime(invite.end_time)}`}
+                    isDarkMode={isDarkMode}
                   />
                 </View>
 
@@ -230,17 +235,19 @@ const DetailRow = ({
   label,
   value,
   isCaps,
+  isDarkMode
 }: {
   label: string;
   value: string;
   isCaps?: boolean;
+  isDarkMode: boolean;
 }) => (
   <View className="flex-row justify-between py-3 border-b border-slate-50">
     <Text className="text-slate-400 text-[11px] font-bold uppercase tracking-wider">
       {label}
     </Text>
     <Text
-      className={`text-slate-800 font-bold text-xs ${isCaps ? "uppercase" : ""}`}
+      className={`${isDarkMode ? "text-white":"text-slate-800 "} font-bold text-xs ${isCaps ? "uppercase" : ""}`}
     >
       {value}
     </Text>

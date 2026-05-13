@@ -1,3 +1,4 @@
+import { router } from "expo-router";
 import { Calendar, ShieldCheck } from "lucide-react-native";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -11,11 +12,10 @@ import {
 import EventDetailModal from "../Components/EventDetailModal";
 import { getTodayEvents } from "../services/api";
 import { EstateEvent } from "../services/interfaces";
-import { router } from "expo-router";
 import { useUser } from "../UserContext";
 
 export default function AllEventsScreen() {
-  const {user} = useUser()
+  const { user, isDarkMode, theme } = useUser();
   const [events, setEvents] = useState<EstateEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -60,54 +60,29 @@ export default function AllEventsScreen() {
     }
   }, []);
 
-  // const MultipliedEvents = Array(16).fill(events).flat();
-
-  // const formatEventDate = () => {
-  //   if (selectedEvent) {
-  //     const start = selectedEvent.start_date.split("T")[0];
-  //     const end = selectedEvent.end_date?.split("T")[0];
-
-  //     // If there's an end date and it's different from the start date
-  //     if (end && end !== start) {
-  //       return `${start}\nto\n${end}`;
-  //     }
-  //     return start;
-  //   }
-  // };
-
-  // const formatEventTime = () => {
-  //   if (selectedEvent) {
-  //     return `${selectedEvent.start_time} - ${selectedEvent.end_time}`;
-  //   }
-  // };
-
-  // const filteredEvents = events.filter((e) =>
-  //   e.title.toLowerCase().includes(search.toLowerCase()),
-  // );
-
   if (!user?.estate_id) {
-      return (
-        <View className="flex-1 justify-center items-center p-6 bg-gray-50">
-          <View className="bg-white p-8 rounded-3xl shadow-sm items-center border border-gray-100">
-            <ShieldCheck size={60} color="#4f46e5" />
-            <Text className="text-xl font-bold text-gray-900 mt-4 text-center">
-              Security Access Restricted
-            </Text>
-            <TouchableOpacity
-              className="bg-indigo-600 py-4 px-10 rounded-2xl shadow-md mt-6"
-              onPress={() => router.push("/JoinRequest" as any)}
-            >
-              <Text className="text-white font-bold text-lg">Join an Estate</Text>
-            </TouchableOpacity>
-          </View>
+    return (
+      <View className="flex-1 justify-center items-center p-6 bg-gray-50">
+        <View className="bg-white p-8 rounded-3xl shadow-sm items-center border border-gray-100">
+          <ShieldCheck size={60} color="#4f46e5" />
+          <Text className="text-xl font-bold text-gray-900 mt-4 text-center">
+            Security Access Restricted
+          </Text>
+          <TouchableOpacity
+            className="bg-indigo-600 py-4 px-10 rounded-2xl shadow-md mt-6"
+            onPress={() => router.push("/JoinRequest" as any)}
+          >
+            <Text className="text-white font-bold text-lg">Join an Estate</Text>
+          </TouchableOpacity>
         </View>
-      );
-    }
+      </View>
+    );
+  }
 
   if (loading) return <ActivityIndicator className="flex-1" color="#6366f1" />;
 
   return (
-    <View className="flex-1 bg-gray-50">
+    <View className={`flex-1 ${isDarkMode ? "bg-gm-navy/20" : "bg-gray-50 "}`}>
       <FlatList
         data={events}
         keyExtractor={(item) => item.id}
@@ -117,29 +92,29 @@ export default function AllEventsScreen() {
         renderItem={({ item }) => (
           <TouchableOpacity
             onPress={() => setSelectedEvent(item)}
-            className="bg-white p-5 rounded-3xl mb-4 shadow-sm border border-slate-100 flex-row items-center justify-between"
+            className={`${isDarkMode ? 'bg-gm-navy':'bg-white'} p-5 rounded-3xl mb-4 shadow-sm border border-slate-100 flex-row items-center justify-between`}
           >
             <View className="flex-row items-center flex-1">
-              <View className="bg-indigo-100 p-3 rounded-2xl mr-4">
-                <Calendar size={24} color="#4f46e5" />
+              <View className={`${isDarkMode ? 'bg-gm-gold':'bg-indigo-100 '} p-3 rounded-2xl mr-4`}>
+                <Calendar size={24} color={"#4f46e5"} />
               </View>
               <View className="flex-1">
                 <Text
-                  className="text-lg font-bold text-slate-900"
+                  className={`text-lg font-montserrat-bold ${isDarkMode ? 'text-gm-gold':'text-gm-navy'}`}
                   numberOfLines={1}
                 >
                   {item.title}
                 </Text>
-                <Text className="text-slate-400 text-sm font-bold uppercase">
+                <Text className= {`${isDarkMode ? 'text-white':'text-gm-navy'} text-sm font-roboto-regular uppercase`}>
                   {item.start_time} - {item.end_time}
                 </Text>
               </View>
             </View>
             <View className="items-end">
-              <Text className="text-indigo-600 font-black text-lg">
+              <Text className={`text-lg font-montserrat-bold ${isDarkMode ? 'text-gm-gold':'text-gm-navy'}`}>
                 {item.registered_count}
               </Text>
-              <Text className="text-slate-400 text-[8px] font-black uppercase">
+              <Text className={`${isDarkMode ? 'text-white':'text-gm-navy'} text-sm font-roboto-regular uppercase`}>
                 Guests
               </Text>
             </View>
