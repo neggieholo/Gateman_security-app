@@ -9,12 +9,14 @@ import {
   Clock 
 } from "lucide-react-native";
 import { notification } from "../services/interfaces";
+import { useUser } from "../UserContext";
 
 interface Props {
   item: notification;
 }
 
 export default function NotificationCard({ item }: Props) {
+  const {isDarkMode,theme} = useUser()
   
   // Dynamic theme based on notification type
   const getTheme = () => {
@@ -33,7 +35,7 @@ export default function NotificationCard({ item }: Props) {
     }
   };
 
-  const theme = getTheme();
+  const Theme = getTheme();
 
   // Format date (e.g., "Today at 2:30 PM")
   const formatDate = (dateStr: string) => {
@@ -43,19 +45,19 @@ export default function NotificationCard({ item }: Props) {
 
   return (
     <View 
-      className="bg-white mx-4 my-2 p-5 rounded-3xl shadow-sm border-l-8" 
-      style={{ borderLeftColor: theme.color }}
+      className={` ${isDarkMode ? 'bg-gm-navy': 'bg-white '} mx-4 my-2 p-5 rounded-3xl shadow-sm border-l-8`} 
+      style={{ borderLeftColor: Theme.color }}
     >
       <View className="flex-row justify-between items-center mb-2">
         <View className="flex-row items-center">
           <View 
             className="p-2 rounded-full mr-3" 
-            style={{ backgroundColor: `${theme.color}20` }}
+            style={{ backgroundColor: `${Theme.color}20` }}
           >
-            <theme.icon size={20} color={theme.color} />
+            <Theme.icon size={20} color={Theme.color} />
           </View>
-          <Text className="text-gray-400 font-bold uppercase tracking-widest text-[10px]">
-            {theme.label}
+          <Text className={`${isDarkMode ? "text-white" : "text-gray-400"} font-bold uppercase tracking-widest text-[10px]`}>
+            {Theme.label}
           </Text>
         </View>
         
@@ -65,13 +67,13 @@ export default function NotificationCard({ item }: Props) {
         </View>
       </View>
 
-      <Text className="text-lg font-bold text-gray-800 mb-1 leading-6">
+      <Text className={`text-lg font-bold ${isDarkMode ? "text-white" : "text-gray-800"}  mb-1 leading-6`}>
         {item.title}
       </Text>
 
-      <View className="mt-2 p-3 rounded-xl flex-row items-start bg-gray-50">
-        <Info size={16} color="#94a3b8" style={{ marginTop: 2, marginRight: 8 }} />
-        <Text className="text-gray-600 text-sm flex-1 leading-5">
+      <View className={`mt-2 p-3 rounded-xl flex-row items-start ${isDarkMode ? 'bg-gm-navy border border-gm-gold': 'bg-gray-50 '}`}>
+        <Info size={16} color={theme.accent} style={{ marginTop: 2, marginRight: 8 }} />
+        <Text className={`${isDarkMode ? "text-white" : "text-gray-600"} text-sm flex-1 leading-5`}>
           {item.message}
         </Text>
       </View>

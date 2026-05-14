@@ -1,5 +1,5 @@
 import { router } from "expo-router";
-import { Calendar, ShieldCheck } from "lucide-react-native";
+import { Calendar, LogIn, ShieldAlert, ShieldCheck } from "lucide-react-native";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -62,17 +62,57 @@ export default function AllEventsScreen() {
 
   if (!user?.estate_id) {
     return (
-      <View className="flex-1 justify-center items-center p-6 bg-gray-50">
-        <View className="bg-white p-8 rounded-3xl shadow-sm items-center border border-gray-100">
+      <View className={`${isDarkMode ? "bg-gm-navy/20" : "bg-gray-50"} flex-1 justify-center items-center p-6`}>
+        <View className={`${isDarkMode ? "bg-gm-navy" : "bg-white"} p-8 rounded-3xl shadow-sm items-center border border-gray-100>`}>
           <ShieldCheck size={60} color="#4f46e5" />
-          <Text className="text-xl font-bold text-gray-900 mt-4 text-center">
+          <Text className={`text-xl font-bold ${isDarkMode ? "text-white" : "text-gm-navy"} mt-4 text-center`}>
             Security Access Restricted
           </Text>
           <TouchableOpacity
-            className="bg-indigo-600 py-4 px-10 rounded-2xl shadow-md mt-6"
+            className={`${isDarkMode ? 'bg-gm-charcoal': 'bg-gm-navy '} py-4 px-10 rounded-2xl shadow-md mt-6`}
             onPress={() => router.push("/JoinRequest" as any)}
           >
             <Text className="text-white font-bold text-lg">Join an Estate</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }
+
+  if (!user?.is_on_duty) {
+    return (
+      <View
+        className={`flex-1 justify-center items-center p-6 ${isDarkMode ? "bg-gm-navy/20" : "bg-gray-50 "}`}
+      >
+        <View
+          className={`${isDarkMode ? "bg-gm-navy" : "bg-white "} p-8 rounded-[40px] shadow-xl items-center border border-slate-100 w-full max-w-sm`}
+        >
+          <View className="w-20 h-20 bg-rose-50 rounded-3xl items-center justify-center mb-6 rotate-3">
+            <ShieldAlert size={44} color="#e11d48" />
+          </View>
+
+          <Text
+            className={`${isDarkMode ? "text-white" : "text-gm-navy"} text-2xl font-montserrat-extrabold text-center uppercase tracking-tighter`}
+          >
+            Duty Status Required
+          </Text>
+
+          <Text
+            className={`text-center mt-3 font-oswald-semibold leading-5 px-2 ${isDarkMode ? "text-white" : "text-gm-navy"} `}
+          >
+            You cannot verify guests while{" "}
+            <Text className="text-rose-600 font-bold">OFF DUTY</Text>. Please
+            return to the dashboard to clock in.
+          </Text>
+
+          <TouchableOpacity
+            className="bg-slate-900 w-full py-5 rounded-[24px] shadow-lg mt-8 flex-row justify-center items-center active:bg-slate-800"
+            onPress={() => router.push("/dashboard" as any)}
+          >
+            <LogIn size={20} color="white" />
+            <Text className="text-white font-montserrat-bold text-lg ml-2 uppercase tracking-widest">
+              Back to Dashboard
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -92,29 +132,37 @@ export default function AllEventsScreen() {
         renderItem={({ item }) => (
           <TouchableOpacity
             onPress={() => setSelectedEvent(item)}
-            className={`${isDarkMode ? 'bg-gm-navy':'bg-white'} p-5 rounded-3xl mb-4 shadow-sm border border-slate-100 flex-row items-center justify-between`}
+            className={`${isDarkMode ? "bg-gm-navy" : "bg-white"} p-5 rounded-3xl mb-4 shadow-sm border border-slate-100 flex-row items-center justify-between`}
           >
             <View className="flex-row items-center flex-1">
-              <View className={`${isDarkMode ? 'bg-gm-gold':'bg-indigo-100 '} p-3 rounded-2xl mr-4`}>
+              <View
+                className={`${isDarkMode ? "bg-gm-gold" : "bg-indigo-100 "} p-3 rounded-2xl mr-4`}
+              >
                 <Calendar size={24} color={"#4f46e5"} />
               </View>
               <View className="flex-1">
                 <Text
-                  className={`text-lg font-montserrat-bold ${isDarkMode ? 'text-gm-gold':'text-gm-navy'}`}
+                  className={`text-lg font-montserrat-bold ${isDarkMode ? "text-gm-gold" : "text-gm-navy"}`}
                   numberOfLines={1}
                 >
                   {item.title}
                 </Text>
-                <Text className= {`${isDarkMode ? 'text-white':'text-gm-navy'} text-sm font-roboto-regular uppercase`}>
+                <Text
+                  className={`${isDarkMode ? "text-white" : "text-gm-navy"} text-sm font-roboto-regular uppercase`}
+                >
                   {item.start_time} - {item.end_time}
                 </Text>
               </View>
             </View>
             <View className="items-end">
-              <Text className={`text-lg font-montserrat-bold ${isDarkMode ? 'text-gm-gold':'text-gm-navy'}`}>
+              <Text
+                className={`text-lg font-montserrat-bold ${isDarkMode ? "text-gm-gold" : "text-gm-navy"}`}
+              >
                 {item.registered_count}
               </Text>
-              <Text className={`${isDarkMode ? 'text-white':'text-gm-navy'} text-sm font-roboto-regular uppercase`}>
+              <Text
+                className={`${isDarkMode ? "text-white" : "text-gm-navy"} text-sm font-roboto-regular uppercase`}
+              >
                 Guests
               </Text>
             </View>

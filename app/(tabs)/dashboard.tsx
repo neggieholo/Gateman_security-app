@@ -68,6 +68,7 @@ export default function SecurityDashboard() {
     setRefreshing(true);
     try {
       setRefreshTrigger((prev) => !prev);
+      setCheckInCode("");
     } catch (error) {
       console.error("Refresh failed:", error);
     } finally {
@@ -126,6 +127,7 @@ export default function SecurityDashboard() {
 
       if (result.success) {
         setIsCheckedIn(result.isOnDuty);
+        setCheckInCode("");
         if (result.isOnDuty) setCheckInCode(""); // Clear on success
         Alert.alert(
           "Success",
@@ -133,6 +135,7 @@ export default function SecurityDashboard() {
             ? "Checked in successfully"
             : "Checked out successfully",
         );
+        setUser({ ...user, is_on_duty: result.isOnDuty });
       } else {
         Alert.alert("Denied", result.error || "Verification failed");
       }
@@ -171,17 +174,22 @@ export default function SecurityDashboard() {
     }
   };
 
-  // --- Handle No Estate Joined View ---
   if (!user?.estate_id) {
     return (
-      <View className="flex-1 justify-center items-center p-6 bg-gm-white">
-        <View className="bg-white p-8 rounded-3xl shadow-sm items-center border border-gray-100">
+      <View
+        className={`${isDarkMode ? "bg-gm-navy/20" : "bg-gray-50"} flex-1 justify-center items-center p-6`}
+      >
+        <View
+          className={`${isDarkMode ? "bg-gm-navy" : "bg-white"} p-8 rounded-3xl shadow-sm items-center border border-gray-100>`}
+        >
           <ShieldCheck size={60} color="#4f46e5" />
-          <Text className="text-xl font-bold text-gray-900 mt-4 text-center">
+          <Text
+            className={`text-xl font-bold ${isDarkMode ? "text-white" : "text-gm-navy"} mt-4 text-center`}
+          >
             Security Access Restricted
           </Text>
           <TouchableOpacity
-            className="bg-indigo-600 py-4 px-10 rounded-2xl shadow-md mt-6"
+            className={`${isDarkMode ? "bg-gm-charcoal" : "bg-gm-navy "} py-4 px-10 rounded-2xl shadow-md mt-6`}
             onPress={() => router.push("/JoinRequest" as any)}
           >
             <Text className="text-white font-bold text-lg">Join an Estate</Text>
@@ -193,7 +201,7 @@ export default function SecurityDashboard() {
 
   return (
     <ScrollView
-      className={`flex-1 ${isDarkMode ? 'bg-gm-navy/20': 'bg-gray-50 '} px-6 pt-6`}
+      className={`flex-1 ${isDarkMode ? "bg-gm-navy/20" : "bg-gray-50 "} px-6 pt-6`}
       contentContainerStyle={{ flexGrow: 1 }}
       refreshControl={
         <RefreshControl
@@ -244,7 +252,9 @@ export default function SecurityDashboard() {
 
         {/* Row 1 */}
         <View className="flex-row mb-2">
-          <View className={`${isDarkMode ? 'bg-gm-navy border-gm-navy': 'bg-white border-gray-100'} p-3 rounded-3xl shadow-sm border flex-1 mr-2 items-center`}>
+          <View
+            className={`${isDarkMode ? "bg-gm-navy border-gm-navy" : "bg-white border-gray-100"} p-3 rounded-3xl shadow-sm border flex-1 mr-2 items-center`}
+          >
             <Text className="text-blue-600 text-xl font-black">
               {stats.total_expected}
             </Text>
@@ -252,7 +262,9 @@ export default function SecurityDashboard() {
               Expected Today
             </Text>
           </View>
-          <View className={`${isDarkMode ? 'bg-gm-navy border-gm-navy': 'bg-white border-gray-100'} p-3 rounded-3xl shadow-sm border flex-1 items-center`}>
+          <View
+            className={`${isDarkMode ? "bg-gm-navy border-gm-navy" : "bg-white border-gray-100"} p-3 rounded-3xl shadow-sm border flex-1 items-center`}
+          >
             <Text className="text-emerald-600 text-xl font-black">
               {stats.checked_in}
             </Text>
@@ -264,7 +276,9 @@ export default function SecurityDashboard() {
 
         {/* Row 2 */}
         <View className="flex-row">
-          <View className={`${isDarkMode ? 'bg-gm-navy border-gm-navy': 'bg-white border-gray-100'} p-3 rounded-3xl shadow-sm border flex-1 mr-2 items-center`}>
+          <View
+            className={`${isDarkMode ? "bg-gm-navy border-gm-navy" : "bg-white border-gray-100"} p-3 rounded-3xl shadow-sm border flex-1 mr-2 items-center`}
+          >
             <Text className="text-orange-500 text-xl font-black">
               {stats.checked_out}
             </Text>
@@ -272,7 +286,9 @@ export default function SecurityDashboard() {
               Checked Out
             </Text>
           </View>
-          <View className={`${isDarkMode ? 'bg-gm-navy border-gm-navy': 'bg-white border-gray-100'} p-3 rounded-3xl shadow-sm border flex-1 items-center`}>
+          <View
+            className={`${isDarkMode ? "bg-gm-navy border-gm-navy" : "bg-white border-gray-100"} p-3 rounded-3xl shadow-sm border flex-1 items-center`}
+          >
             <Text className="text-red-600 text-xl font-black">
               {stats.overstayed}
             </Text>
@@ -288,9 +304,15 @@ export default function SecurityDashboard() {
         <Text className="text-gm-navy font-montserrat-extrabold text-xs uppercase tracking-widest mb-4">
           Shift Control
         </Text>
-        <View className={`${isDarkMode ? 'bg-gm-navy border-gm-navy': 'bg-white border-gray-100'} p-6 rounded-3xl shadow-sm border text-[14px]`}>
+        <View
+          className={`${isDarkMode ? "bg-gm-navy border-gm-navy" : "bg-white border-gray-100"} p-6 rounded-3xl shadow-sm border text-[14px]`}
+        >
           <View className="flex-row gap-2 items-center mb-5">
-            <Text className={`${isDarkMode ? 'text-white' : 'text-gm-navy'} font-oswald-semibold uppercase tracking-widest`}>Duty Status:</Text>
+            <Text
+              className={`${isDarkMode ? "text-white" : "text-gm-navy"} font-oswald-semibold uppercase tracking-widest`}
+            >
+              Duty Status:
+            </Text>
             <Text
               className={`font-oswald-semibold uppercase tracking-widest ${isCheckedIn ? "text-green-400" : "text-red-400"}`}
             >
@@ -311,11 +333,7 @@ export default function SecurityDashboard() {
             }
             // editable={!isCheckedIn}
             keyboardType="number-pad"
-            className={`w-full h-10 px-4 rounded-xl border text-sm font-roboto-regular mb-4 ${isDarkMode ? 'border-gm-gold' : 'border-gm-navy'} ${
-              isCheckedIn
-                ? "bg-gray-100 text-gray-400"
-                : "bg-white text-gm-navy"
-            }`}
+            className={`w-full h-10 px-4 rounded-xl border text-sm font-roboto-regular mb-4 ${isDarkMode ? "border-gm-gold text-white" : "border-gm-navy text-gray-400"}`}
           />
 
           <TouchableOpacity
@@ -334,7 +352,9 @@ export default function SecurityDashboard() {
                 ) : (
                   <LogIn color="white" size={20} />
                 )}
-                <Text className={`font-oswald-semibold text-lg ml-2 ${isCheckedIn ? "text-white" : "text-gm-gold"}`}>
+                <Text
+                  className={`font-oswald-semibold text-lg ml-2 ${isCheckedIn ? "text-white" : "text-gm-gold"}`}
+                >
                   {isCheckedIn ? "End Shift" : "Start Shift"}
                 </Text>
               </>
@@ -345,14 +365,16 @@ export default function SecurityDashboard() {
             <TouchableOpacity
               onPress={handleSendLocation}
               disabled={updatingLoc}
-              className={`w-full h-10 mt-4 rounded-2xl border border-indigo-100 ${isDarkMode ? 'bg-gm-navy border-gm-navy': 'bg-white border-gray-100'} flex-row items-center justify-center active:bg-indigo-100`}
+              className={`w-full h-10 mt-4 rounded-2xl border border-indigo-100 ${isDarkMode ? "bg-gm-navy border-gm-navy" : "bg-white border-gray-100"} flex-row items-center justify-center active:bg-indigo-100`}
             >
               {updatingLoc ? (
                 <ActivityIndicator color={"#4f46e5"} />
               ) : (
                 <>
                   <MapPin color={theme.accent} size={20} />
-                  <Text className={`${isDarkMode ? 'text-gm-gold' : 'text-gm-navy'} font-oswald-semibold ml-2 text-base`}>
+                  <Text
+                    className={`${isDarkMode ? "text-gm-gold" : "text-gm-navy"} font-oswald-semibold ml-2 text-base`}
+                  >
                     Send Live Location
                   </Text>
                 </>
@@ -369,14 +391,18 @@ export default function SecurityDashboard() {
         </Text>
         <TouchableOpacity
           onPress={() => router.push("/events")}
-          className={`${isDarkMode ? 'bg-gm-navy border-gm-navy': 'bg-white border-gray-100'} p-6 rounded-[30px] shadow-xl flex-row items-center justify-between`}
+          className={`${isDarkMode ? "bg-gm-navy border-gm-navy" : "bg-white border-gray-100"} p-6 rounded-[30px] shadow-xl flex-row items-center justify-between`}
         >
           <View className="flex-row items-center">
-            <View className={`${isDarkMode ? 'bg-gm-gold' : 'bg-gm-navy'} w-12 h-12 rounded-2xl items-center justify-center mr-4`}>
+            <View
+              className={`${isDarkMode ? "bg-gm-gold" : "bg-gm-navy"} w-12 h-12 rounded-2xl items-center justify-center mr-4`}
+            >
               <Bell size={24} color="white" />
             </View>
             <View>
-              <Text className={`text-lg ${isDarkMode ? 'text-white' : 'text-gm-navy'} font-oswald-semibold`}>
+              <Text
+                className={`text-lg ${isDarkMode ? "text-white" : "text-gm-navy"} font-oswald-semibold`}
+              >
                 {stats.active_events.toString()} Active Event(s)
               </Text>
               <Text className="text-gray-400 font-roboto-regular text-xs">

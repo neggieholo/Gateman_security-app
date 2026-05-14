@@ -36,9 +36,12 @@ export default function SecurityTabsLayout() {
         console.warn("Backend logout failed", apiErr);
       }
       await CookieManager.clearAll();
-      if (setSessionId) setSessionId("");
-      setUser(null);
       router.replace("/");
+
+      setTimeout(() => {
+        if (setSessionId) setSessionId("");
+        setUser(null);
+      }, 100);
     } catch (e) {
       console.error("Logout failed", e);
     } finally {
@@ -94,8 +97,7 @@ export default function SecurityTabsLayout() {
             headerTitle: "",
             headerLeft: () => (
               <View style={{ marginLeft: 15 }}>
-                <Text className="text-gm-gold text-lg font-montserrat-extrabold"
-                >
+                <Text className="text-gm-gold text-lg font-montserrat-extrabold">
                   Hi, {user?.name || "Security"}
                 </Text>
               </View>

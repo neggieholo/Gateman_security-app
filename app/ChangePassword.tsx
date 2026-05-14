@@ -12,8 +12,10 @@ import {
   ScrollView 
 } from 'react-native';
 import { changePassword } from './services/api';
+import { useUser } from './UserContext';
 
 export default function ChangePasswordScreen() {
+  const {isDarkMode} =useUser();
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({ 
     currentPassword: '', 
@@ -57,18 +59,18 @@ export default function ChangePasswordScreen() {
   return (
     <KeyboardAvoidingView 
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      className="flex-1 bg-gray-50"
+      className={`flex-1 bg-gray-50 ${isDarkMode ? 'bg-gm-navy/20': 'bg-gray-50 '}`}
     >
-      <ScrollView contentContainerStyle={{ flexGrow: 1 }} className="p-6">
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }} className={`p-6 ${isDarkMode ? 'bg-gm-navy/20': 'bg-gray-50 '}`}>
         <View className="mb-8">
-          <Text className="text-gray-500 mt-1 font-oswald-semibold text-lg">Ensure your account stays secure</Text>
+          <Text className={`${isDarkMode ? "text-gm-charcoal":"text-gray-500"} mt-1 font-oswald-semibold text-lg`}>Ensure your account stays secure</Text>
         </View>
 
         {/* Current Password */}
         <View className="mb-5">
-          <Text className="text-sm font-oswald-semibold text-gray-700 mb-2">Current Password</Text>
+          <Text className={`text-sm font-oswald-semibold ${isDarkMode ? "text-gm-charcoal" : "text-gray-700"} mb-2`}>Current Password</Text>
           <TextInput 
-            className="bg-white border border-gray-200 p-4 rounded-2xl text-gray-900 font-roboto-regular shadow-sm"
+            className={`${isDarkMode ? "bg-gm-navy border-gm-gold" : "bg-white border border-gray-200 "} p-4 rounded-2xl text-gray-900 font-roboto-regular shadow-sm`}
             placeholder="Enter current password"
             placeholderTextColor="#9ca3af"
             secureTextEntry 
@@ -79,9 +81,9 @@ export default function ChangePasswordScreen() {
 
         {/* New Password */}
         <View className="mb-5">
-          <Text className="text-sm font-oswald-semibold text-gray-700 mb-2">New Password</Text>
+          <Text className={`text-sm font-oswald-semibold ${isDarkMode ? "text-gm-charcoal" : "text-gray-700"} mb-2`}>New Password</Text>
           <TextInput 
-            className="bg-white border border-gray-200 p-4 rounded-2xl text-gray-900 font-roboto-regular shadow-sm"
+            className={`${isDarkMode ? "bg-gm-navy border-gm-gold" : "bg-white border border-gray-200 "} p-4 rounded-2xl text-gray-900 font-roboto-regular shadow-sm`}
             placeholder="Minimum 6 characters"
             placeholderTextColor="#9ca3af"
             secureTextEntry 
@@ -92,9 +94,9 @@ export default function ChangePasswordScreen() {
 
         {/* Confirm Password */}
         <View className="mb-8">
-          <Text className="text-sm font-oswald-semibold text-gray-700 mb-2">Confirm New Password</Text>
+          <Text className={`text-sm font-oswald-semibold ${isDarkMode ? "text-gm-charcoal" : "text-gray-700"} mb-2`}>Confirm New Password</Text>
           <TextInput 
-            className="bg-white border border-gray-200 p-4 rounded-2xl text-gray-900 font-roboto-regular shadow-sm"
+            className={`${isDarkMode ? "bg-gm-navy border-gm-gold" : "bg-white border border-gray-200 "} p-4 rounded-2xl text-gray-900 font-roboto-regular shadow-sm`}
             placeholder="Repeat new password"
             placeholderTextColor="#9ca3af"
             secureTextEntry 
@@ -106,7 +108,7 @@ export default function ChangePasswordScreen() {
         {/* Action Button */}
         <TouchableOpacity 
           activeOpacity={0.8}
-          className={`p-4 rounded-2xl items-center shadow-md ${loading ? 'bg-indigo-400' : 'bg-indigo-600'}`}
+          className={`p-4 rounded-2xl items-center shadow-md ${isDarkMode ? 'bg-gm-charcoal' : 'bg-gm-navy'}`}
           onPress={handleUpdate} 
           disabled={loading}
         >

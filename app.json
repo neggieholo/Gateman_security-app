@@ -13,11 +13,13 @@
       "bundleIdentifier": "com.snametech.gatemansecurity",
       "googleServicesFile": "./GoogleService-Info.plist",
       "infoPlist": {
-        "UIBackgroundModes": [
-          "voip",
-          "remote-notification",
-          "audio"
-        ]
+        "UIBackgroundModes": ["voip", "remote-notification", "audio"],
+        "NSMicrophoneUsageDescription": "GateMan needs access to your microphone for emergency voice calls between residents and security.",
+        "NSCameraUsageDescription": "Allow GateMan Security to access your camera for emergency video verification.",
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSLocationWhenInUseUsageDescription": "Allow GateMan to use your location to verify your security check-in at the estate.",
+        "NSLocationAlwaysUsageDescription": "Allow GateMan to track location for estate patrol verification.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "GateMan needs location access to ensure security guards are on-site."
       }
     },
     "android": {
@@ -29,6 +31,9 @@
         "INTERNET",
         "WAKE_LOCK",
         "ACCESS_NETWORK_STATE",
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "android.permission.FOREGROUND_SERVICE_PHONE_CALL",
+        "android.permission.FOREGROUND_SERVICE_MICROPHONE",
         "BLUETOOTH",
         "android.permission.FOREGROUND_SERVICE",
         "android.permission.CAMERA",
@@ -60,6 +65,12 @@
       "expo-router",
       "expo-notifications",
       [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow GateMan to use your location to verify your security check-in at the estate."
+        }
+      ],
+      [
         "expo-camera",
         {
           "cameraPermission": "Allow GateMan Security to access your camera",
@@ -76,6 +87,11 @@
             "useFrameworks": "static",
             "buildReactNativeFromSource": true,
             "bitcode": false
+          },
+          "android": {
+            "enableProguardInReleaseBuilds": true,
+            "extraProguardRules": "-keep class **.zego.** { *; }",
+            "enableMinifyInReleaseBuilds": true
           }
         }
       ],
@@ -106,6 +122,12 @@
       "eas": {
         "projectId": "f1d9a14d-1a72-4c86-8f8f-83e874e735bb"
       }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/f1d9a14d-1a72-4c86-8f8f-83e874e735bb"
     }
   }
 }

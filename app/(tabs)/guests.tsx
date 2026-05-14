@@ -16,7 +16,7 @@ import {
   User,
   X,
 } from "lucide-react-native";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -61,6 +61,7 @@ export default function GatePassesView() {
   const [fetching, setFetching] = useState(false);
   const [scanned, setScanned] = useState(false);
   const [selectedInvite, setSelectedInvite] = useState<Invitation | null>(null);
+  const isScanningLock = useRef(false);
 
   const loadData = async () => {
     try {
@@ -405,18 +406,40 @@ export default function GatePassesView() {
   }, [activeTab, logFilter, searchTerm, invitations]);
 
   const handleFinalSearch = async (code: string) => {
-    // console.log("Scanned or Search data:", code);
+    if (!code || isScanningLock.current) return;
+
+    isScanningLock.current = true;
+    setScanned(true); // This detaches the listener
     setFetching(true);
+
     try {
       const res = await getInvitationById(code);
       if (res.success) {
-        // console.log("Searched Invite:", res.invitation)
         setSearchedInvite(res.invitation);
+        // RESET BOTH HERE
+        isScanningLock.current = false;
+        setScanned(false); // Re-enables the listener for the next time the scanner opens
       } else {
-        Alert.alert("Not Found", "No invitation matches this code.");
+        Alert.alert("Not Found", "Invalid code.", [
+          {
+            text: "OK",
+            onPress: () => {
+              isScanningLock.current = false;
+              setScanned(false);
+            },
+          },
+        ]);
       }
     } catch (err) {
-      Alert.alert("Error", "Check your internet connection.");
+      Alert.alert("Error", "Connection failed.", [
+        {
+          text: "OK",
+          onPress: () => {
+            isScanningLock.current = false;
+            setScanned(false);
+          },
+        },
+      ]);
     } finally {
       setFetching(false);
       setShowScanner(false);
@@ -477,7 +500,9 @@ export default function GatePassesView() {
             </View>
           </View>
           <View className={`${status.container} px-3 py-1 rounded-lg`}>
-            <Text className={`${status.text} text-[10px] font-oswald-semibold uppercase`}>
+            <Text
+              className={`${status.text} text-[10px] font-oswald-semibold uppercase`}
+            >
               {status.label}
             </Text>
           </View>
@@ -593,14 +618,20 @@ export default function GatePassesView() {
 
   if (!user?.estate_id) {
     return (
-      <View className="flex-1 justify-center items-center p-6 bg-gray-50">
-        <View className="bg-white p-8 rounded-3xl shadow-sm items-center border border-gray-100">
+      <View
+        className={`${isDarkMode ? "bg-gm-navy/20" : "bg-gray-50"} flex-1 justify-center items-center p-6`}
+      >
+        <View
+          className={`${isDarkMode ? "bg-gm-navy" : "bg-white"} p-8 rounded-3xl shadow-sm items-center border border-gray-100>`}
+        >
           <ShieldCheck size={60} color="#4f46e5" />
-          <Text className="text-xl font-bold text-gray-900 mt-4 text-center">
+          <Text
+            className={`text-xl font-bold ${isDarkMode ? "text-white" : "text-gm-navy"} mt-4 text-center`}
+          >
             Security Access Restricted
           </Text>
           <TouchableOpacity
-            className="bg-indigo-600 py-4 px-10 rounded-2xl shadow-md mt-6"
+            className={`${isDarkMode ? "bg-gm-charcoal" : "bg-gm-navy "} py-4 px-10 rounded-2xl shadow-md mt-6`}
             onPress={() => router.push("/JoinRequest" as any)}
           >
             <Text className="text-white font-bold text-lg">Join an Estate</Text>
@@ -612,17 +643,17 @@ export default function GatePassesView() {
 
   if (!user?.is_on_duty) {
     return (
-      <View className="flex-1 justify-center items-center p-6 bg-slate-50">
-        <View className="bg-white p-8 rounded-[40px] shadow-xl items-center border border-slate-100 w-full max-w-sm">
+      <View className={`flex-1 justify-center items-center p-6 ${isDarkMode ? 'bg-gm-navy/20': 'bg-gray-50 '}`}>
+      <View className={`${isDarkMode ? 'bg-gm-navy': 'bg-white '} p-8 rounded-[40px] shadow-xl items-center border border-slate-100 w-full max-w-sm`}>
           <View className="w-20 h-20 bg-rose-50 rounded-3xl items-center justify-center mb-6 rotate-3">
             <ShieldAlert size={44} color="#e11d48" />
           </View>
 
-          <Text className="text-2xl font-black text-slate-900 text-center uppercase tracking-tighter">
+          <Text className={`${isDarkMode ? "text-white" : "text-gm-navy"} text-2xl font-montserrat-extrabold text-center uppercase tracking-tighter`}>
             Duty Status Required
           </Text>
 
-          <Text className="text-slate-500 text-center mt-3 font-medium leading-5 px-2">
+          <Text className={`text-center mt-3 font-oswald-semibold leading-5 px-2 ${isDarkMode ? "text-white" : "text-gm-navy"} `}>
             You cannot verify guests while{" "}
             <Text className="text-rose-600 font-bold">OFF DUTY</Text>. Please
             return to the dashboard to clock in.
@@ -633,14 +664,10 @@ export default function GatePassesView() {
             onPress={() => router.push("/dashboard" as any)}
           >
             <LogIn size={20} color="white" />
-            <Text className="text-white font-bold text-lg ml-2 uppercase tracking-widest">
+            <Text className="text-white font-montserrat-bold text-lg ml-2 uppercase tracking-widest">
               Back to Dashboard
             </Text>
           </TouchableOpacity>
-
-          <Text className="text-[10px] text-slate-300 mt-6 font-black uppercase tracking-[3px]">
-            GateMan Security Protocol
-          </Text>
         </View>
       </View>
     );
@@ -751,6 +778,8 @@ export default function GatePassesView() {
                       setShowScanner(false);
                       setSearchedInvite(null);
                       setSearchTerm("");
+                      setScanned(false);
+                      isScanningLock.current = false;
                     }}
                     className="px-6 py-5 rounded-2xl items-center border border-slate-200"
                   >

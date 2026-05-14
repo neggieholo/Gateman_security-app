@@ -27,6 +27,8 @@ export default function NotificationsPage() {
     triggerRefresh,
     setBadgeCount,
     loadingNotifications,
+    isDarkMode,
+    theme
   } = useContext(UserContext);
 
   // useEffect(() => {
@@ -63,17 +65,16 @@ export default function NotificationsPage() {
   };
 
   return (
-    <View className="flex flex-1 bg-gray-50">
-      <View className="p-4 flex-row justify-between items-center">
-        <Text className="text-2xl font-bold text-gray-900">Notifications</Text>
+    <View className="flex flex-1">
+      {/* <View className={`p-4 flex-row justify-end items-center  ${isDarkMode ? 'bg-gm-navy/20': 'bg-gray-50 '}`}>
         <TouchableOpacity onPress={triggerRefresh}>
           <Text className="text-blue-600 font-semibold">Refresh</Text>
         </TouchableOpacity>
-      </View>
+      </View> */}
 
       <ScrollView
         contentContainerStyle={{ flexGrow: 1 }}
-        className="bg-gray-50"
+        className={`${isDarkMode ? 'bg-gm-navy/20': 'bg-gray-50'}`}
         refreshControl={
           <RefreshControl
             refreshing={loadingNotifications}

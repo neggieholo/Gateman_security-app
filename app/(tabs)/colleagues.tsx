@@ -129,7 +129,9 @@ export default function SecurityColleagues() {
 
       {/* On Duty Location Details */}
       {item.is_on_duty && (
-        <View className={`${isDarkMode ? 'border-gm-gold': 'border-gm-navy'} mt-4 pt-4 border-t flex-row justify-between`}>
+        <View
+          className={`${isDarkMode ? "border-gm-gold" : "border-gm-navy"} mt-4 pt-4 border-t flex-row justify-between`}
+        >
           <View className="flex-1 pr-2">
             <Text
               className={`${isDarkMode ? "text-gray-50 " : "text-gm-navy"} text-[10px] uppercase tracking-widest ml-1 font-oswald-semibold`}
@@ -147,7 +149,9 @@ export default function SecurityColleagues() {
             </View>
           </View>
 
-          <View className={`flex-1 pl-2 border-l ${isDarkMode ? 'border-gm-gold': 'border-gm-navy'}`}>
+          <View
+            className={`flex-1 pl-2 border-l ${isDarkMode ? "border-gm-gold" : "border-gm-navy"}`}
+          >
             <Text
               className={`${isDarkMode ? "text-gray-50 " : "text-gm-navy"} text-[10px] uppercase tracking-widest ml-1 font-oswald-semibold`}
             >
@@ -170,14 +174,20 @@ export default function SecurityColleagues() {
 
   if (!user?.estate_id) {
     return (
-      <View className="flex-1 justify-center items-center p-6 bg-gray-50">
-        <View className="bg-white p-8 rounded-3xl shadow-sm items-center border border-gray-100">
+      <View
+        className={`${isDarkMode ? "bg-gm-navy/20" : "bg-gray-50"} flex-1 justify-center items-center p-6`}
+      >
+        <View
+          className={`${isDarkMode ? "bg-gm-navy" : "bg-white"} p-8 rounded-3xl shadow-sm items-center border border-gray-100>`}
+        >
           <ShieldCheck size={60} color="#4f46e5" />
-          <Text className="text-xl font-bold text-gray-900 mt-4 text-center">
+          <Text
+            className={`text-xl font-bold ${isDarkMode ? "text-white" : "text-gm-navy"} mt-4 text-center`}
+          >
             Security Access Restricted
           </Text>
           <TouchableOpacity
-            className="bg-indigo-600 py-4 px-10 rounded-2xl shadow-md mt-6"
+            className={`${isDarkMode ? "bg-gm-charcoal" : "bg-gm-navy "} py-4 px-10 rounded-2xl shadow-md mt-6`}
             onPress={() => router.push("/JoinRequest" as any)}
           >
             <Text className="text-white font-bold text-lg">Join an Estate</Text>
@@ -212,7 +222,7 @@ export default function SecurityColleagues() {
           <TouchableOpacity
             key={item.value}
             onPress={() => setFilter(item.value as any)}
-            className={`px-5 py-2.5 rounded-full ${isDarkMode ? 'border border-gm-gold': ''} ${filter === item.value ? "bg-gm-navy" : "bg-white"}`}
+            className={`px-5 py-2.5 rounded-full ${isDarkMode ? "border border-gm-gold" : ""} ${filter === item.value ? "bg-gm-navy" : "bg-white"}`}
           >
             <Text
               className={`font-oswald-semibold text-xs ${filter === item.value ? "text-gm-gold" : "text-gray-500"}`}
