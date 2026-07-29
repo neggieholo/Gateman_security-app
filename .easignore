@@ -36,14 +36,8 @@ yarn-error.*
 # typescript
 *.tsbuildinfo
 
-example
+app-example
 
 # generated native folders
 /ios
 /android
-
-google-services.json
-GoogleService-Info.plist
-gateman_resident_voip.p12
-gateman_secure.key
-gateman_security_voip.p12
