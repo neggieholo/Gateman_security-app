@@ -1,0 +1,103 @@
+diff --git a/node_modules/react-native-callkeep/android/src/main/java/io/wazo/callkeep/RNCallKeepModule.java b/node_modules/react-native-callkeep/android/src/main/java/io/wazo/callkeep/RNCallKeepModule.java
+index 025480a..5fa8ea7 100644
+--- a/node_modules/react-native-callkeep/android/src/main/java/io/wazo/callkeep/RNCallKeepModule.java
++++ b/node_modules/react-native-callkeep/android/src/main/java/io/wazo/callkeep/RNCallKeepModule.java
+@@ -434,17 +434,19 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
+         this.hasListeners = false;
+     }
+ 
+-    @ReactMethod
++    // @ReactMethod
+     public void displayIncomingCall(String uuid, String number, String callerName) {
+         this.displayIncomingCall(uuid, number, callerName, false, null);
+     }
+ 
+-    @ReactMethod
++    // @ReactMethod
+     public void displayIncomingCall(String uuid, String number, String callerName, boolean hasVideo) {
+         this.displayIncomingCall(uuid, number, callerName, hasVideo, null);
+     }
+ 
+-    public void displayIncomingCall(String uuid, String number, String callerName, boolean hasVideo, @Nullable Bundle payload) {
++    @ReactMethod
++    public void displayIncomingCall(String uuid, String number, String callerName, boolean hasVideo, @Nullable ReadableMap payload) {
++        Log.d("RNCallKeep", "Method called!");
+         if (!isConnectionServiceAvailable() || !hasPhoneAccount()) {
+             Log.w(TAG, "[RNCallKeepModule] displayIncomingCall ignored due to no ConnectionService or no phone account");
+             return;
+@@ -459,8 +461,11 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
+         extras.putString(EXTRA_CALLER_NAME, callerName);
+         extras.putString(EXTRA_CALL_UUID, uuid);
+         extras.putString(EXTRA_HAS_VIDEO, String.valueOf(hasVideo));
+-        if (payload != null) {
+-            extras.putBundle(EXTRA_PAYLOAD, payload);
++
++        Bundle extrasForPayload = (payload != null) ? Arguments.toBundle(payload) : null;
++
++        if (extrasForPayload != null) {
++            extras.putBundle(EXTRA_PAYLOAD, extrasForPayload);
+         }
+         this.listenToNativeCallsState();
+         telecomManager.addNewIncomingCall(handle, extras);
+@@ -483,17 +488,18 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
+         conn.onAnswer();
+     }
+ 
+-    @ReactMethod
++    // @ReactMethod
+     public void startCall(String uuid, String number, String callerName) {
+         this.startCall(uuid, number, callerName, false, null);
+     }
+ 
+-    @ReactMethod
++    // @ReactMethod
+     public void startCall(String uuid, String number, String callerName, boolean hasVideo) {
+         this.startCall(uuid, number, callerName, hasVideo, null);
+     }
+ 
+-    public void startCall(String uuid, String number, String callerName, boolean hasVideo, @Nullable Bundle payload) {
++    @ReactMethod
++    public void startCall(String uuid, String number, String callerName, boolean hasVideo, ReadableMap payload) {
+         Log.d(TAG, "[RNCallKeepModule] startCall called, uuid: " + uuid + ", number: " + number + ", callerName: " + callerName + ", payload: " + payload);
+ 
+         if (!isConnectionServiceAvailable() || !hasPhoneAccount() || !hasPermissions() || number == null) {
+@@ -509,8 +515,11 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule implements Life
+         callExtras.putString(EXTRA_CALL_UUID, uuid);
+         callExtras.putString(EXTRA_CALL_NUMBER, number);
+         callExtras.putString(EXTRA_HAS_VIDEO, String.valueOf(hasVideo));
+-        if (payload != null) {
+-            callExtras.putBundle(EXTRA_PAYLOAD, payload);
++
++        Bundle extrasForPayload = (payload != null) ? Arguments.toBundle(payload) : null;
++
++        if (extrasForPayload != null) {
++            extras.putBundle(EXTRA_PAYLOAD, extrasForPayload);
+         }
+ 
+         extras.putParcelable(TelecomManager.EXTRA_PHONE_ACCOUNT_HANDLE, handle);
+diff --git a/node_modules/react-native-callkeep/index.d.ts b/node_modules/react-native-callkeep/index.d.ts
+index 25b43da..dd783b7 100644
+--- a/node_modules/react-native-callkeep/index.d.ts
++++ b/node_modules/react-native-callkeep/index.d.ts
+@@ -163,7 +163,7 @@ declare module 'react-native-callkeep' {
+       uuid: string,
+       handle: string,
+       localizedCallerName?: string,
+-      handleType?: HandleType,
++      handleType?: 'number' | 'email' | 'generic',
+       hasVideo?: boolean,
+       options?: object,
+     ): void
+diff --git a/node_modules/react-native-callkeep/index.js b/node_modules/react-native-callkeep/index.js
+index a011f67..2a86300 100644
+--- a/node_modules/react-native-callkeep/index.js
++++ b/node_modules/react-native-callkeep/index.js
+@@ -138,7 +138,7 @@ class RNCallKeep {
+     options = null
+   ) => {
+     if (!isIOS) {
+-      RNCallKeepModule.displayIncomingCall(uuid, handle, localizedCallerName, hasVideo);
++      RNCallKeepModule.displayIncomingCall(uuid, handle, localizedCallerName, hasVideo, options);
+       return;
+     }
+ 

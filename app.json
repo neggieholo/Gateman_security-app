@@ -1,0 +1,148 @@
+{
+  "expo": {
+    "name": "GM Security",
+    "slug": "gateman_security",
+    "version": "1.1.3",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "gatemansecurity",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.snametech.gatemansecurity",
+      "googleServicesFile": "./GoogleService-Info.plist",
+      "infoPlist": {
+        "UIBackgroundModes": ["voip", "remote-notification", "audio"],
+        "NSMicrophoneUsageDescription": "GateMan Security needs access to your microphone for emergency voice calls between residents and security.",
+        "NSCameraUsageDescription": "Allow GateMan Security to access your camera for emergency video verification and liveness check.",
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSLocationWhenInUseUsageDescription": "Allow GateMan Security to use your location to verify your security check-in at the estate.",
+        "NSLocationAlwaysUsageDescription": "Allow GateMan Security to track location for estate patrol verification.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "GateMan Security needs location access to ensure security guards are on-site."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#E6F4FE",
+        "foregroundImage": "./assets/images/android-icon-foreground.png"
+      },
+      "permissions": [
+        "INTERNET",
+        "WAKE_LOCK",
+        "ACCESS_NETWORK_STATE",
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "android.permission.FOREGROUND_SERVICE_PHONE_CALL",
+        "android.permission.FOREGROUND_SERVICE_MICROPHONE",
+        "BLUETOOTH",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO",
+        "CALL_PHONE",
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.POST_NOTIFICATIONS",
+        "android.permission.BIND_TELECOM_CONNECTION_SERVICE",
+        "android.permission.SCHEDULE_EXACT_ALARM",
+        "android.permission.VIBRATE",
+        "android.permission.RECEIVE_BOOT_COMPLETED",
+        "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK",
+        "android.permission.SYSTEM_ALERT_WINDOW",
+        "android.permission.USE_FULL_SCREEN_INTENT"
+      ],
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": false,
+      "package": "com.snametech.gatemansecurity",
+      "googleServicesFile": "./google-services.json"
+    },
+    "web": {
+      "output": "static",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-notifications",
+      "./withZegoSounds.js",
+      [
+        "expo-asset",
+        {
+          "assets": [
+            "./native-assets/zego_incoming.mp3",
+            "./native-assets/zego_outgoing.mp3"
+          ]
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "The app accesses your photos to let you share them with your friends."
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow GateMan Security to use your location to verify your security check-in at the estate."
+        }
+      ],
+      [
+        "@config-plugins/react-native-callkeep",
+        {
+          "additionalPermissions": ["BACKGROUND_PRODUCTION"]
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "useFrameworks": "static",
+            "buildReactNativeFromSource": true
+          },
+          "android": {
+            "newArchEnabled": true,
+            "enableProguardInReleaseBuilds": true,
+            "extraProguardRules": "-keep class com.google.** {*;}\n-keep class io.wazo.callkeep.** {*;}\n-keep class com.google.common.reflect.** {*;}\n-keep class * extends com.facebook.react.bridge.NativeModule {*;}\n-keep class * extends com.facebook.react.bridge.JavaScriptModule {*;}\n-dontwarn com.google.common.reflect.**\n-dontwarn com.facebook.react.**",
+            "extraMavenRepos": ["https://www.jitpack.io"],
+            "minSdkVersion": 26,
+            "buildToolsVersion": "35.0.0",
+            "reactNativeArchitectures": ["arm64-v8a", "x86_64"]
+          }
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#ffffff",
+          "dark": {
+            "backgroundColor": "#000000"
+          }
+        }
+      ],
+      "@react-native-firebase/app",
+      "@react-native-firebase/auth",
+      "@react-native-firebase/messaging",
+      "@react-native-community/datetimepicker",
+      "expo-secure-store"
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "f1d9a14d-1a72-4c86-8f8f-83e874e735bb"
+      }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/f1d9a14d-1a72-4c86-8f8f-83e874e735bb"
+    }
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "224938571789",
+    "project_id": "gateman-fef40",
+    "storage_bucket": "gateman-fef40.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:224938571789:android:8f4495908a2d849d3bbd44",
+        "android_client_info": {
+          "package_name": "com.snametech.gateman"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCy17yVenN0bIK7JLXbwyCn_gKO3QQL5r4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:224938571789:android:94fd087d73baa3683bbd44",
+        "android_client_info": {
+          "package_name": "com.snametech.gatemansecurity"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCy17yVenN0bIK7JLXbwyCn_gKO3QQL5r4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

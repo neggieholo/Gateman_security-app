@@ -1,0 +1,157 @@
+import { Ionicons } from "@expo/vector-icons";
+import CookieManager from "@preeternal/react-native-cookie-manager";
+import auth from "@react-native-firebase/auth";
+import { Tabs, useRouter } from "expo-router";
+import { useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import { postLogout } from "../../src/services/api";
+import { useUser } from "../UserContext";
+
+export default function SecurityTabsLayout() {
+  const { user, setUser, setSessionId, socket, badgeCount } = useUser();
+  const [loggingOut, setLoggingOut] = useState(false);
+  const router = useRouter();
+
+  const handleLogout = () => {
+    Alert.alert("Logout", "Are you sure you want to end your session?", [
+      { text: "Cancel", style: "cancel" },
+      { text: "Logout", style: "destructive", onPress: () => logOut() },
+    ]);
+  };
+  const logOut = async () => {
+    setLoggingOut(true);
+    try {
+      if (socket) socket.disconnect();
+      if (auth().currentUser) await auth().signOut();
+      try {
+        await postLogout();
+      } catch (apiErr) {
+        console.warn("Backend logout failed", apiErr);
+      }
+      await CookieManager.clearAll();
+      router.replace("/");
+
+      setTimeout(() => {
+        if (setSessionId) setSessionId("");
+        setUser(null);
+      }, 100);
+    } catch (e) {
+      console.error("Logout failed", e);
+    } finally {
+      setLoggingOut(false);
+    }
+  };
+
+  // Define the icons as a reusable component for clarity
+  const DashboardHeaderRight = () => (
+    <View className="flex-row gap-7 m-2">
+      <TouchableOpacity
+        onPress={() => router.push("/NotificationsPage" as any)}
+      >
+        <Ionicons name="notifications-outline" size={24} color="#D4AF37" />
+        {badgeCount > 0 && (
+          <View
+            className="absolute -top-1 -right-1 bg-red-500 rounded-full flex items-center justify-center border-2 border-[#2563eb]"
+            style={{ minWidth: 18, height: 18 }}
+          >
+            <Text className="text-white text-[9px] font-bold">
+              {badgeCount}
+            </Text>
+          </View>
+        )}
+      </TouchableOpacity>
+
+      <TouchableOpacity onPress={handleLogout} disabled={loggingOut}>
+        {loggingOut ? (
+          <ActivityIndicator size="small" color="#D4AF37" />
+        ) : (
+          <Ionicons name="log-out-outline" size={24} color="#D4AF37" />
+        )}
+      </TouchableOpacity>
+    </View>
+  );
+
+  return (
+    <SafeAreaProvider>
+      <Tabs
+        initialRouteName="dashboard"
+        screenOptions={{
+          headerStyle: { backgroundColor: "#0A1F44" },
+          headerTintColor: "#D4AF37",
+          headerTitleStyle: { fontFamily: "Montserrat-ExtraBold" },
+          headerTitleAlign: "center",
+          tabBarStyle: { backgroundColor: "#0A1F44", borderTopWidth: 0 },
+          tabBarActiveTintColor: "#BFDBFE",
+          tabBarInactiveTintColor: "#D4AF37",
+        }}
+      >
+        <Tabs.Screen
+          name="dashboard"
+          options={{
+            headerTitle: "",
+            headerLeft: () => (
+              <View style={{ marginLeft: 15 }}>
+                <Text className="text-gm-gold text-lg font-montserrat-extrabold">
+                  Hi, {user?.name || "Security"}
+                </Text>
+              </View>
+            ),
+            // ATTACHED headerRight specifically to this screen
+            headerRight: () => <DashboardHeaderRight />,
+            tabBarLabel: "Dashboard",
+            tabBarIcon: ({ color, size }) => (
+              <Ionicons name="grid" size={size} color={color} />
+            ),
+          }}
+        />
+
+        <Tabs.Screen
+          name="colleagues"
+          options={{
+            title: "Colleagues",
+            tabBarIcon: ({ color, size }) => (
+              <Ionicons name="shield-checkmark" size={size} color={color} />
+            ),
+          }}
+        />
+
+        <Tabs.Screen
+          name="guests"
+          options={{
+            title: "Guests",
+            tabBarIcon: ({ color, size }) => (
+              <Ionicons name="people" size={size} color={color} />
+            ),
+          }}
+        />
+
+        <Tabs.Screen
+          name="bookings"
+          options={{
+            title: "Bookings",
+            tabBarIcon: ({ color, size }) => (
+              <Ionicons name="calendar" size={size} color={color} />
+            ),
+          }}
+        />
+
+        <Tabs.Screen
+          name="settings"
+          options={{
+            title: "Settings",
+            tabBarIcon: ({ color, size }) => (
+              <Ionicons name="settings" size={size} color={color} />
+            ),
+          }}
+        />
+      </Tabs>
+    </SafeAreaProvider>
+  );
+}
