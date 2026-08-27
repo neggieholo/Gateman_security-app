@@ -157,6 +157,11 @@ export default function LoginScreen() {
           await AsyncStorage.setItem("biometrics_active", "true");
           setShowBiometricBtn(true);
         }
+        
+        if (!response.user.biometric_login) {
+          await AsyncStorage.setItem("biometrics_active", "false");
+          setShowBiometricBtn(false);
+        }
 
         setUser(response.user);
         // console.log("User:", response.user)

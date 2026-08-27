@@ -14,7 +14,7 @@ import * as ImagePicker from "expo-image-picker";
 import { useNavigation } from "expo-router";
 import {
   fetchAllEstates,
-  submitSecurityJoinRequest,
+  getS3UploadedUrl
 } from "../src/services/api";
 import { Estate } from "../src/services/interfaces";
 import { UserContext } from "./UserContext";
@@ -95,70 +95,59 @@ export default function JoinRequestForm() {
   };
 
   const handleSubmit = async () => {
-    // Enhanced Validation
-    if (!estateId) {
-      return Alert.alert("Validation", "Please select an estate.");
-    }
-    if (!selfie || !idFront) {
-      return Alert.alert(
-        "Validation",
-        "Please ensure your selfie and ID front are captured.",
-      );
-    }
-    if (idType !== "nin" && !idBack) {
-      return Alert.alert("Validation", "Please capture the back of your ID.");
-    }
+    // 1. Validation
+    if (!estateId) return Alert.alert("Validation", "Please select an estate.");
+    if (!selfie || !idFront)
+      return Alert.alert("Validation", "Selfie and ID front are required.");
+    if (idType !== "nin" && !idBack)
+      return Alert.alert("Validation", "Back of ID required.");
 
     setLoading(true);
 
     try {
-      const formData = new FormData();
-      // Use the fallback 'user?.id' directly to ensure it's fresh
-      formData.append("tempSecurityId", user?.id || "");
-      formData.append("estateId", estateId);
-      formData.append("idType", idType);
+      // 2. Kick off uploads concurrently and await them together
+      const [selfieUrl, idFrontUrl, idBackUrl] = await Promise.all([
+        getS3UploadedUrl(selfie, "gateman_security_kyc"),
+        getS3UploadedUrl(idFront, "gateman_security_kyc"),
+        idType !== "nin" && idBack
+          ? getS3UploadedUrl(idBack, "gateman_security_kyc")
+          : Promise.resolve(null),
+      ]);
 
-      if (selfie)
-        formData.append("selfie", {
-          uri: selfie,
-          name: "selfie.jpg",
-          type: "image/jpeg",
-        } as any);
-      if (idFront)
-        formData.append("idFront", {
-          uri: idFront,
-          name: "idFront.jpg",
-          type: "image/jpeg",
-        } as any);
-      if (idBack)
-        formData.append("idBack", {
-          uri: idBack,
-          name: "idBack.jpg",
-          type: "image/jpeg",
-        } as any);
+      // 3. Send final JSON payload with HTTPS URLs
+      const payload = {
+        estateId,
+        idType,
+        selfieUrl,
+        idFrontUrl,
+        idBackUrl,
+      };
 
-      const response = await submitSecurityJoinRequest(formData);
+      const BASE_URL = `${process.env.EXPO_PUBLIC_BASE_URL}/api`;
+      const res = await fetch(`${BASE_URL}/security/join-request`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+        credentials: "include",
+      });
 
-      if (response.success) {
-        Alert.alert(
-          "Application Submitted",
-          "Your application has been submitted for review.",
-          [
-            {
-              text: "OK",
-              onPress: () => {
-                navigation.goBack();
-                triggerRefresh();
-              },
+      const response = await res.json();
+
+      if (res.ok && response.success) {
+        Alert.alert("Success", "Application submitted!", [
+          {
+            text: "OK",
+            onPress: () => {
+              navigation.goBack();
+              triggerRefresh();
             },
-          ],
-        );
+          },
+        ]);
       } else {
-        Alert.alert("Submission Failed", response.message || "Unknown error");
+        Alert.alert("Error", response.error || "Submission failed");
       }
     } catch (err: any) {
-      console.error("Submit Error:", err);
-      Alert.alert("Error", err.message || "Upload failed");
+      Alert.alert("Upload Error", err.message || "Failed to upload images");
     } finally {
       setLoading(false);
     }

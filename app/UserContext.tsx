@@ -1,10 +1,12 @@
 // app/context/UserContext.tsx
+import { ExpiredSubscriptionModal } from "@/Components/ExpiredSubscriptionModal";
 import * as Notifications from "expo-notifications";
 import { router } from "expo-router";
 import React, {
   createContext,
   ReactNode,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -20,6 +22,7 @@ import {
   SecurityUser,
   tempNotification,
 } from "../src/services/interfaces";
+import { NoModuleAccessModal } from "@/Components/NoModuleAccessModal";
 
 export type Theme = typeof Colors.light;
 
@@ -82,7 +85,47 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const triggerRefresh = () => setRefreshTrigger((prev) => !prev);
   const BASE_URL = `${process.env.EXPO_PUBLIC_BASE_URL}`;
   const systemColorScheme = useColorScheme();
+  const [showExpiredModal, setShowExpiredModal] = useState<boolean>(false);
+  const [showNoModuleModal, setShowNoModuleModal] = useState<boolean>(false);
   const [isDarkMode, setIsDarkMode] = useState(systemColorScheme === "dark");
+
+  const estate = useMemo(() => user?.estate, [user?.estate]);
+
+  const isEstateExpired = useMemo(() => {
+    if (!estate) return false;
+    if (!estate.subscription_expiry) return true;
+
+    const expiryDate = new Date(estate.subscription_expiry);
+    const now = new Date();
+    return expiryDate <= now;
+  }, [estate]);
+
+  const hasSecurityModule = useMemo(() => {
+    if (!estate) return true;
+    const plan = estate.plan;
+    if (!plan) return true;
+
+    // Active trial grants full access
+    if (plan.is_trial) return true;
+
+    // Check if security module is in selected add-ons
+    const addOns = plan.selected_add_ons || [];
+    return addOns.includes("security");
+  }, [estate]);
+
+  useEffect(() => {
+    if (user && isEstateExpired) {
+      setShowExpiredModal(true);
+    } else {
+      setShowExpiredModal(false);
+    }
+
+    if (user && !isEstateExpired && !hasSecurityModule) {
+      setShowNoModuleModal(true);
+    } else {
+      setShowNoModuleModal(false);
+    }
+  }, [user, isEstateExpired, hasSecurityModule]);
 
   useEffect(() => {
     setIsDarkMode(systemColorScheme === "dark");
@@ -262,6 +305,22 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       }}
     >
       {children}
+
+      {user && isEstateExpired && (
+        <ExpiredSubscriptionModal
+          isOpen={showExpiredModal}
+          activeEstate={estate}
+          onClose={() => setShowExpiredModal(false)}
+        />
+      )}
+
+      {user && !isEstateExpired && !hasSecurityModule && (
+        <NoModuleAccessModal
+          isOpen={showNoModuleModal}
+          estateName={estate?.name || "your estate"}
+          onClose={() => setShowNoModuleModal(false)}
+        />
+      )}
     </UserContext.Provider>
   );
 };

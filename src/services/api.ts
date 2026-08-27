@@ -638,7 +638,7 @@ export const formatDate = (dateStr: string) => {
   return `${day}-${month}-${year}`;
 };
 
-interface UploadResult {
+interface UploadResul {
   fileUrl: string;
 }
 

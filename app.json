@@ -2,7 +2,7 @@
   "expo": {
     "name": "GM Security",
     "slug": "gateman_security",
-    "version": "1.1.3",
+    "version": "1.1.6",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "gatemansecurity",
@@ -102,7 +102,7 @@
           "android": {
             "newArchEnabled": true,
             "enableProguardInReleaseBuilds": true,
-            "extraProguardRules": "-keep class com.google.** {*;}\n-keep class io.wazo.callkeep.** {*;}\n-keep class com.google.common.reflect.** {*;}\n-keep class * extends com.facebook.react.bridge.NativeModule {*;}\n-keep class * extends com.facebook.react.bridge.JavaScriptModule {*;}\n-dontwarn com.google.common.reflect.**\n-dontwarn com.facebook.react.**",
+            "extraProguardRules": "-keep class com.google.** {*;}\n-keep class io.wazo.callkeep.** {*;}\n-keep class com.google.common.reflect.** {*;}\n-keep class * extends com.facebook.react.bridge.NativeModule {*;}\n-keep class * extends com.facebook.react.bridge.JavaScriptModule {*;}\n-dontwarn com.google.common.reflect.**\n-dontwarn com.facebook.react.**\n\n# --- Camera & Native Snapshot Frame Buffer Keep Rules ---\n-keep class androidx.camera.** { *; }\n-keep class com.mrousavy.camera.** { *; }\n-keep class com.google.mlkit.** { *; }\n-keep class com.google.android.gms.vision.** { *; }\n-keep class * extends com.mrousavy.camera.frameprocessors.FrameProcessorPlugin { *; }",
             "extraMavenRepos": ["https://www.jitpack.io"],
             "minSdkVersion": 26,
             "buildToolsVersion": "35.0.0",

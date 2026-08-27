@@ -1,4 +1,5 @@
 import { useAppState } from "@react-native-community/hooks";
+import { CameraView } from "expo-camera";
 import { useIsFocused } from "expo-router";
 import { CameraIcon, Eye, RefreshCw, Smile, X } from "lucide-react-native";
 import { useEffect, useRef, useState } from "react";
@@ -6,6 +7,7 @@ import {
   ActivityIndicator,
   Image,
   Modal,
+  Platform,
   Text,
   TouchableOpacity,
   View,
@@ -26,7 +28,6 @@ import {
   Camera,
   Face,
   FaceDetectorOptions,
-  useImageFaceDetector,
 } from "react-native-vision-camera-face-detector";
 
 interface Props {
@@ -50,11 +51,16 @@ export default function LivenessCameraModal({
   const [isLivenessActive, setIsLivenessActive] = useState<boolean>(false);
   const [livenessStatus, setLivenessStatus] = useState<string>("Ready");
   const [capturedUri, setCapturedUri] = useState<string | null>(null);
+  const [isProcessingFrame, setIsProcessingFrame] = useState<boolean>(false);
 
-  const cameraRef = useRef<CameraRef>(null);
+  // Switch state: 'vision' for detection, 'expo' for photo capture
+  const [activeEngine, setActiveEngine] = useState<"vision" | "expo">("vision");
+
+  const expoCameraRef = useRef<any>(null);
   const isCapturingRef = useRef<boolean>(false);
   const sawEyesOpenRef = useRef<boolean>(false);
   const missedFramesRef = useRef<number>(0);
+  const cameraRef = useRef<CameraRef>(null);
 
   const faceDetectorOptions = useRef<FaceDetectorOptions>({
     performanceMode: "fast",
@@ -65,12 +71,10 @@ export default function LivenessCameraModal({
     windowHeight: containerHeight,
   }).current;
 
-  // JSI Native Frame Processor Binding
-  const imageFaceDetector = useImageFaceDetector(faceDetectorOptions);
-
   const isFocused = useIsFocused();
   const appState = useAppState();
-  const isCameraActive = visible && isFocused && appState === "active";
+  const isCameraActive =
+    visible && isFocused && appState === "active" && !isProcessingFrame;
   const cameraDevice = useCameraDevice(cameraFacing);
 
   // Animated Bounding Box Values
@@ -101,6 +105,7 @@ export default function LivenessCameraModal({
     setIsLivenessActive(false);
     setLivenessStatus("Ready");
     setCapturedUri(null);
+    setActiveEngine("vision");
     isCapturingRef.current = false;
     sawEyesOpenRef.current = false;
     missedFramesRef.current = 0;
@@ -115,40 +120,92 @@ export default function LivenessCameraModal({
     onClose();
   };
 
-  function handleCameraMountError(error: any) {
-    console.error("camera mount error", error);
-  }
-
   const captureAndDetect = async () => {
     if (!cameraRef.current) return;
+
     try {
-      const snapshot = await cameraRef.current.takeSnapshot();
-      const path = await snapshot.saveToTemporaryFileAsync("jpg");
+      // 1. Tell camera to stop delivering ML Kit frames on Android
+      if (Platform.OS === "android") {
+        setIsProcessingFrame(true);
+      }
 
-      const formattedPath = path.startsWith("file://")
-        ? path
-        : `file://${path}`;
-      setCapturedUri(formattedPath);
-      setLivenessStatus("Verification Passed!");
+      // 2. Wait 400ms for native queue to flush frame buffers
+      await new Promise((resolve) => setTimeout(resolve, 400));
 
-      setTimeout(() => {
-        onLivenessSuccess(formattedPath);
-        handleClose();
-      }, 800);
+      if (cameraRef.current) {
+        const snapshot = await cameraRef.current.takeSnapshot();
+        const path = await snapshot.saveToTemporaryFileAsync("jpg");
+
+        const formattedPath = path.startsWith("file://")
+          ? path
+          : `file://${path}`;
+
+        setCapturedUri(formattedPath);
+        setLivenessStatus("Verification Passed!");
+
+        setTimeout(() => {
+          onLivenessSuccess(formattedPath);
+          handleClose();
+        }, 800);
+      }
     } catch (err) {
       console.error("Failed to capture snapshot:", err);
       setLivenessStatus("Capture failed!");
       isCapturingRef.current = false;
+      setIsProcessingFrame(false); // Reset on error
+    } finally {
+      setIsProcessingFrame(false); // Ensure we reset after processing
+    }
+  };
+
+  function handleCameraMountError(error: any) {
+    console.error("camera mount error", error);
+  }
+
+  // Triggered automatically when Expo Camera mounts & is ready
+  const handleExpoCameraReady = async () => {
+    if (!expoCameraRef.current) return;
+    try {
+      // Give the sensor/AE 350ms to settle exposure and focus
+      await new Promise((resolve) => setTimeout(resolve, 350));
+
+      const photo = await expoCameraRef.current.takePictureAsync({
+        quality: 0.85,
+        skipProcessing: true,
+      });
+
+      if (photo?.uri) {
+        const formattedPath = photo.uri.startsWith("file://")
+          ? photo.uri
+          : `file://${photo.uri}`;
+
+        setCapturedUri(formattedPath);
+        setLivenessStatus("Verification Passed!");
+
+        setTimeout(() => {
+          onLivenessSuccess(formattedPath);
+          handleClose();
+        }, 800);
+      }
+    } catch (err) {
+      console.error("Expo Camera capture failed:", err);
+      setLivenessStatus("Capture failed!");
+      isCapturingRef.current = false;
+      setActiveEngine("vision");
     }
   };
 
   const handleFacesDetected = async (detectedFaces: Face[]) => {
     try {
-      if (!isCameraActive || isCapturingRef.current) return;
+      if (
+        !isCameraActive ||
+        isCapturingRef.current ||
+        activeEngine !== "vision"
+      )
+        return;
 
       if (!detectedFaces || detectedFaces.length === 0) {
         missedFramesRef.current += 1;
-        // Only collapse the box if we miss face detection for 5 consecutive frames (~150ms buffer)
         if (missedFramesRef.current > 5) {
           aFaceW.value = 0;
           aFaceH.value = 0;
@@ -161,13 +218,11 @@ export default function LivenessCameraModal({
         return;
       }
 
-      // Reset missed frame counter when face is detected
       missedFramesRef.current = 0;
 
       const face = detectedFaces[0];
       const { bounds } = face;
 
-      // Handle front camera horizontal mirroring adjustment if needed
       let calculatedX = bounds.x;
       if (cameraFacing === "front") {
         calculatedX = windowWidth - bounds.x - bounds.width;
@@ -204,14 +259,21 @@ export default function LivenessCameraModal({
 
         if (isConfirmedBlink || isSmiling) {
           isCapturingRef.current = true;
-          setLivenessStatus("Liveness verified! Capturing...");
-          await captureAndDetect();
+          setLivenessStatus("Remain still...");
+
+          // Pause bounding box
+          aFaceW.value = 0;
+          aFaceH.value = 0;
+
+          setTimeout(() => {
+            setActiveEngine("expo");
+          }, 200);
         } else {
           setLivenessStatus("Blink or Smile to verify...");
         }
       }
     } catch (err) {
-      console.warn("Face detection JSI error caught:", err);
+      console.warn("Face detection error caught:", err);
     }
   };
 
@@ -264,19 +326,37 @@ export default function LivenessCameraModal({
               <Text className="text-gray-400 text-xs">No device found</Text>
             ) : (
               <>
-                <Camera
-                  ref={cameraRef}
-                  style={{ width: "100%", height: "100%" }}
-                  isActive={isCameraActive}
-                  device={cameraDevice}
-                  onError={handleCameraMountError}
-                  onFacesDetected={handleFacesDetected}
-                  {...faceDetectorOptions}
-                  cameraFacing={cameraFacing}
-                />
+                {/* STAGE 1: Vision Camera for Face Detection */}
+                {activeEngine === "vision" && (
+                  <Camera
+                    ref={cameraRef}
+                    style={{ width: "100%", height: "100%" }}
+                    isActive={isCameraActive}
+                    device={cameraDevice}
+                    onError={handleCameraMountError}
+                    onFacesDetected={handleFacesDetected}
+                    {...faceDetectorOptions}
+                    cameraFacing={cameraFacing}
+                  />
+                )}
 
-                {/* Animated Bounding Box */}
-                <Animated.View style={boundingBoxStyle} pointerEvents="none" />
+                {/* STAGE 2: Expo Camera for Immediate Photo Capture */}
+                {activeEngine === "expo" && (
+                  <CameraView
+                    ref={expoCameraRef}
+                    style={{ width: "100%", height: "100%" }}
+                    facing={cameraFacing}
+                    onCameraReady={handleExpoCameraReady}
+                  />
+                )}
+
+                {/* Animated Bounding Box (Vision mode only) */}
+                {activeEngine === "vision" && (
+                  <Animated.View
+                    style={boundingBoxStyle}
+                    pointerEvents="none"
+                  />
+                )}
 
                 {/* Captured Preview Overlay */}
                 {capturedUri && (
@@ -309,6 +389,7 @@ export default function LivenessCameraModal({
           {/* Control Footer */}
           <View className="p-4 bg-slate-950/80 flex-row gap-2">
             <TouchableOpacity
+              disabled={isCapturingRef.current}
               onPress={() =>
                 setCameraFacing((curr) => (curr === "front" ? "back" : "front"))
               }

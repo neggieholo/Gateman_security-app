@@ -71,7 +71,10 @@ export default function SecurityDashboard() {
   const fetchStats = async () => {
     try {
       const data = await getDashboardStats();
-      if (data.success) setStats(data.stats);
+      if (data.success) {
+        setStats(data.stats);
+        console.log(data.stats);
+      }
     } catch (err) {
       console.log("Stats fetch error");
     }
@@ -254,7 +257,7 @@ export default function SecurityDashboard() {
   if (!user?.estate_id) {
     return (
       <View
-        className={`${isDarkMode ? "bg-gm-navy/20" : "bg-gray-50"} flex-1 justify-center items-center p-6`}
+        className={`${isDarkMode ? "bg-slate-950" : "bg-gray-50"} flex-1 justify-center items-center p-6`}
       >
         <View
           className={`${isDarkMode ? "bg-gm-navy" : "bg-white"} p-8 rounded-3xl shadow-sm items-center border border-gray-100`}

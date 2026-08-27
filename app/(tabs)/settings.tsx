@@ -28,7 +28,7 @@ import { sendProfileOtpApi } from "../../src/services/api";
 import { useUser } from "../UserContext";
 
 export default function ResidentSettings() {
-  const { user, isDarkMode, theme } = useUser();
+  const { user, setUser, isDarkMode, theme } = useUser();
   const BASE_URL = `${process.env.EXPO_PUBLIC_BASE_URL}/api`;
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -239,7 +239,6 @@ export default function ResidentSettings() {
       });
 
       if (result.success) {
-        await AsyncStorage.setItem("biometrics_active", "true");
         setProfile((prev) => ({
           ...prev,
           biometric_login: true,
@@ -293,6 +292,17 @@ export default function ResidentSettings() {
         if (profile.email !== user?.email) {
           await SecureStore.setItemAsync("user_email", profile.email);
         }
+        if (profile.phone !== user?.phone) {
+          setUser({ ...user, phone: profile.phone });
+        }
+        if (profile.biometric_login) {
+          await AsyncStorage.setItem("biometrics_active", "true");
+          setUser({ ...user, biometric_login: true });
+        } else {
+          await AsyncStorage.setItem("biometrics_active", "false");
+          setUser({ ...user, biometric_login: false });
+        }
+
         Alert.alert("Success", "Profile updated successfully");
         setIsEditing(false);
       } else {
@@ -522,52 +532,53 @@ export default function ResidentSettings() {
               </TouchableOpacity>
             )}
           </View>
-
-          {user?.estate_id && (
-            <View
-              className={`${isDarkMode ? "bg-gm-navy border-gm-gold" : "bg-white border-slate-100"} p-6 rounded-3xl border shadow-sm mt-6`}
-            >
-              <View className="flex-row items-center justify-between">
-                <View className="flex-row items-center flex-1">
-                  <View
-                    className={`${isDarkMode ? "bg-gm-gold" : "bg-indigo-50"} p-2 rounded-xl`}
-                  >
-                    <User size={20} color="#4f46e5" />
-                  </View>
-                  <View className="ml-4 flex-1">
-                    <Text
-                      className={`${isDarkMode ? "text-gm-gold" : "text-gm-navy"}  font-montserrat-bold text-md`}
-                    >
-                      Biometric Login
-                    </Text>
-                    <Text
-                      className={`${isDarkMode ? "text-white" : "text-slate-500"}  text-xs font-roboto-regular`}
-                    >
-                      Use fingerprint or face ID to secure your account
-                    </Text>
-                  </View>
-                </View>
-
-                <Switch
-                  value={profile.biometric_login}
-                  disabled={!isEditing}
-                  onValueChange={(value) => toggleBiometrics(value)}
-                  trackColor={{
-                    false: "#cbd5e1",
-                    true: isDarkMode ? "#D4AF37" : "#4f46e5",
-                  }}
-                  thumbColor={
-                    Platform.OS === "ios"
-                      ? "#fff"
-                      : profile.biometric_login
-                        ? "#fff"
-                        : "#f4f3f4"
-                  }
-                />
-              </View>
-            </View>
-          )}
         </View>
+
+        {user?.estate_id && (
+          <View
+            className={`${isDarkMode ? "bg-gm-navy border-gm-gold" : "bg-white border-slate-100"} p-6 rounded-3xl border shadow-sm mt-6`}
+          >
+            <View className="flex-row items-center justify-between">
+              <View className="flex-row items-center flex-1">
+                <View
+                  className={`${isDarkMode ? "bg-gm-gold" : "bg-indigo-50"} p-2 rounded-xl`}
+                >
+                  <User size={20} color="#4f46e5" />
+                </View>
+                <View className="ml-4 flex-1">
+                  <Text
+                    className={`${isDarkMode ? "text-gm-gold" : "text-gm-navy"}  font-montserrat-bold text-md`}
+                  >
+                    Biometric Login
+                  </Text>
+                  <Text
+                    className={`${isDarkMode ? "text-white" : "text-slate-500"}  text-xs font-roboto-regular`}
+                  >
+                    Use fingerprint or face ID to secure your account
+                  </Text>
+                </View>
+              </View>
+
+              <Switch
+                value={profile.biometric_login}
+                disabled={!isEditing}
+                onValueChange={(value) => toggleBiometrics(value)}
+                trackColor={{
+                  false: "#cbd5e1",
+                  true: isDarkMode ? "#D4AF37" : "#4f46e5",
+                }}
+                thumbColor={
+                  Platform.OS === "ios"
+                    ? "#fff"
+                    : profile.biometric_login
+                      ? "#fff"
+                      : "#f4f3f4"
+                }
+              />
+            </View>
+          </View>
+        )}
+
         <TouchableOpacity
           className={`${isDarkMode ? "bg-gm-navy" : "bg-white"} p-5 rounded-3xl flex-row items-center justify-between shadow-lg`}
           onPress={() => router.push("/ChangePassword" as any)}

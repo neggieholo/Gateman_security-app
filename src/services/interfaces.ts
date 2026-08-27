@@ -7,6 +7,23 @@ export interface Estate {
   town: string | null;
 }
 
+export interface Plan {
+  is_trial: boolean;
+  selected_add_ons: string[];
+}
+
+export interface EstateProfile {
+  id: string;
+  name: string;
+  address: string;
+  state: string;
+  lga: string;
+  town: string;
+  plan: Plan;
+  subscription_expiry?: string;
+}
+
+
 export interface SecurityUser {
   id: string;
   name: string;
@@ -15,6 +32,7 @@ export interface SecurityUser {
   avatar?: string;
   estate_id: string;
   estate_name?: string;
+  estate: EstateProfile;
   push_token?: string;
   is_on_duty: boolean;
   showWelcome?: boolean;
@@ -24,7 +42,6 @@ export interface SecurityUser {
   checkout_location?: string;
   last_known_location?: string;
   last_location_time?: string;
-  checkin_mode: "SHARED_KIOSK" | "DISTRIBUTED_CODE";
   isTemp?: boolean;
   biometric_login: boolean;
   password_changed: boolean;

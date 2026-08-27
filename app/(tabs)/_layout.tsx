@@ -14,6 +14,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { postLogout } from "../../src/services/api";
 import { useUser } from "../UserContext";
 
+
 export default function SecurityTabsLayout() {
   const { user, setUser, setSessionId, socket, badgeCount } = useUser();
   const [loggingOut, setLoggingOut] = useState(false);
