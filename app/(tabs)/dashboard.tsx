@@ -305,7 +305,7 @@ export default function SecurityDashboard() {
                 <Bell size={30} color="white" />
               </View>
               <Text className="text-gray-900 font-black text-2xl text-center mb-2">
-                Welcome to {user.estate_name || "the Estate"}! 🎉
+                Welcome to {user?.estate?.name || "the Estate"}! 🎉
               </Text>
               <Text className="text-gray-600 text-center leading-5 px-2">
                 Your join request has been approved. Stay updated.

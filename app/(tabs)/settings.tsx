@@ -52,7 +52,7 @@ export default function ResidentSettings() {
 
   const [profile, setProfile] = useState({
     name: user?.name || "",
-    estate: user?.estate_name || "",
+    estate: user?.estate?.name || "",
     email: user?.email || "",
     phone: user?.phone || "",
     email_verified: !!user?.email,
@@ -80,7 +80,7 @@ export default function ResidentSettings() {
     if (user) {
       setProfile({
         name: user.name || "",
-        estate: user?.estate_name || "",
+        estate: user?.estate?.name || "",
         email: user.email || "",
         phone: user.phone || "",
         email_verified: !!user.email,
@@ -383,7 +383,7 @@ export default function ResidentSettings() {
                 if (isEditing) {
                   setProfile({
                     name: user?.name || "",
-                    estate: user?.estate_name || "",
+                    estate: user?.estate?.name || "",
                     email: user?.email || "",
                     phone: user?.phone || "",
                     email_verified: !!user?.email,

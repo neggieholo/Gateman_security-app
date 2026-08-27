@@ -1,4 +1,4 @@
-import { useUser } from "@/app/UserContext";
+import { useUser } from "../../app/UserContext";
 import { AlertTriangle, Building2, ChevronDown } from "lucide-react-native";
 import React from "react";
 import { Modal, Text, TouchableOpacity, View } from "react-native";
@@ -12,13 +12,10 @@ interface ExpiredSubscriptionModalProps {
 export const ExpiredSubscriptionModal: React.FC<
   ExpiredSubscriptionModalProps
 > = ({ isOpen, activeEstate, onClose }) => {
-  const { user, isDarkMode, contextEstateId, setContextEstateId } = useUser();
-  const [showEstatePicker, setShowEstatePicker] = React.useState(false);
+  const { user, isDarkMode } = useUser();
 
   if (!isOpen) return null;
 
-  const estates = user?.estates || [];
-  const hasMultipleEstates = estates.length > 1;
 
   return (
     <Modal
@@ -84,86 +81,6 @@ export const ExpiredSubscriptionModal: React.FC<
             </Text>
           </View>
 
-          {/* Multi-Estate Switcher (If > 1 Estate exists) */}
-          {hasMultipleEstates && (
-            <View className="w-full mt-6 pt-4 border-t border-slate-200/20">
-              <View className="flex-row items-center mb-2">
-                <Building2
-                  size={13}
-                  color={isDarkMode ? "#94a3b8" : "#94a3b8"}
-                />
-                <Text
-                  className={`text-[11px] font-bold uppercase tracking-wider ml-1.5 ${
-                    isDarkMode ? "text-slate-400" : "text-slate-400"
-                  }`}
-                >
-                  Switch to Another Estate
-                </Text>
-              </View>
-
-              {/* Custom Selector Trigger */}
-              <TouchableOpacity
-                onPress={() => setShowEstatePicker(!showEstatePicker)}
-                activeOpacity={0.7}
-                className={`w-full p-3.5 rounded-xl border flex-row items-center justify-between ${
-                  isDarkMode
-                    ? "bg-slate-900 border-slate-800"
-                    : "bg-slate-50 border-slate-200"
-                }`}
-              >
-                <Text
-                  className={`text-xs font-semibold ${
-                    isDarkMode ? "text-slate-200" : "text-slate-800"
-                  }`}
-                >
-                  {activeEstate?.estate_name} (Expired)
-                </Text>
-                <ChevronDown size={16} color="#94a3b8" />
-              </TouchableOpacity>
-
-              {/* Estate Options Dropdown */}
-              {showEstatePicker && (
-                <View
-                  className={`w-full mt-2 rounded-xl border overflow-hidden ${
-                    isDarkMode
-                      ? "bg-slate-900 border-slate-800"
-                      : "bg-slate-50 border-slate-200"
-                  }`}
-                >
-                  {estates.map((est: any) => {
-                    const isSelected = est.id === contextEstateId;
-                    return (
-                      <TouchableOpacity
-                        key={est.id}
-                        onPress={() => {
-                          setContextEstateId(est.id);
-                          setShowEstatePicker(false);
-                        }}
-                        className={`p-3 border-b last:border-b-0 ${
-                          isDarkMode
-                            ? "border-slate-800/60"
-                            : "border-slate-200/60"
-                        } ${isSelected ? "bg-indigo-600/10" : ""}`}
-                      >
-                        <Text
-                          className={`text-xs font-semibold ${
-                            isSelected
-                              ? "text-indigo-500 font-bold"
-                              : isDarkMode
-                              ? "text-slate-300"
-                              : "text-slate-700"
-                          }`}
-                        >
-                          {est.estate_name}{" "}
-                          {est.id === activeEstate?.id ? "(Expired)" : ""}
-                        </Text>
-                      </TouchableOpacity>
-                    );
-                  })}
-                </View>
-              )}
-            </View>
-          )}
         </View>
       </View>
     </Modal>

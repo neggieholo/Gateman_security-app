@@ -31,7 +31,6 @@ export interface SecurityUser {
   phone?: string;
   avatar?: string;
   estate_id: string;
-  estate_name?: string;
   estate: EstateProfile;
   push_token?: string;
   is_on_duty: boolean;
