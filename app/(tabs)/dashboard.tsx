@@ -1,3 +1,4 @@
+import { LocationState } from "@/services/interfaces";
 import * as Location from "expo-location";
 import { useRouter } from "expo-router";
 import {
@@ -32,12 +33,12 @@ import {
   updateSecurityLocation,
 } from "../../src/services/api";
 import { useUser } from "../UserContext";
+import * as LocationModule from "../../modules/location-module/src/LocationModule";
 
 export default function SecurityDashboard() {
-  const { user, setUser, isDarkMode, theme } = useUser();
+  const { user, setUser, isDarkMode, theme, sendLocation } = useUser();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-
   const [loading, setLoading] = useState(false);
   const [isCheckedIn, setIsCheckedIn] = useState(user?.is_on_duty || false);
   const [showBanner, setShowBanner] = React.useState(false);
@@ -90,6 +91,58 @@ export default function SecurityDashboard() {
     setRefreshing(true);
     await fetchStats();
     setRefreshing(false);
+  }, []);
+
+  useEffect(() => {
+    const startTrackingSafely = async () => {
+      console.log("Checking permissions...");
+
+      const serviceEnabled = await Location.hasServicesEnabledAsync();
+      if (!serviceEnabled) {
+        try {
+          // This triggers the native Android popup to turn on Location
+          await Location.enableNetworkProviderAsync();
+        } catch (error: any) {
+          console.log("User refused to enable location services");
+          return; // Stop if they won't turn it on
+        }
+      }
+      const ignored = await LocationModule.isBatteryOptimizationIgnored();
+
+      const { status: fgStatus } =
+        await Location.requestForegroundPermissionsAsync();
+
+      if (fgStatus === "granted") {
+        await Location.requestBackgroundPermissionsAsync();
+
+        console.log("Permissions granted, starting native module...");
+        if (!ignored) {
+          try {
+            LocationModule.requestBatteryOptimization();
+          } catch (e) {
+            console.log("Battery setting popup skipped or failed", e);
+          }
+        }
+        try {
+          LocationModule.startTracking();
+        } catch (e) {
+          console.error("Failed to start native tracking", e);
+        }
+      }
+    };
+
+    startTrackingSafely();
+
+    // 3. LISTEN for the updates coming from Kotlin
+    const subscription = LocationModule.addLocationListener(
+      (data: LocationState) => {
+        sendLocation(data);
+      },
+    );
+
+    return () => {
+      subscription.remove();
+    };
   }, []);
 
   const handleDismissWelcome = () => {

@@ -13,13 +13,18 @@
       "bundleIdentifier": "com.snametech.gatemansecurity",
       "googleServicesFile": "./GoogleService-Info.plist",
       "infoPlist": {
-        "UIBackgroundModes": ["voip", "remote-notification", "audio"],
+        "UIBackgroundModes": [
+          "voip",
+          "remote-notification",
+          "audio",
+          "location"
+        ],
         "NSMicrophoneUsageDescription": "GateMan Security needs access to your microphone for emergency voice calls between residents and security.",
         "NSCameraUsageDescription": "Allow GateMan Security to access your camera for emergency video verification and liveness check.",
         "ITSAppUsesNonExemptEncryption": false,
         "NSLocationWhenInUseUsageDescription": "Allow GateMan Security to use your location to verify your security check-in at the estate.",
         "NSLocationAlwaysUsageDescription": "Allow GateMan Security to track location for estate patrol verification.",
-        "NSLocationAlwaysAndWhenInUseUsageDescription": "GateMan Security needs location access to ensure security guards are on-site."
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "GateMan Security tracks background location to ensure security guards are on-site."
       }
     },
     "android": {
@@ -36,6 +41,8 @@
         "android.permission.FOREGROUND_SERVICE_MICROPHONE",
         "BLUETOOTH",
         "android.permission.FOREGROUND_SERVICE",
+        "FOREGROUND_SERVICE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION",
         "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO",
         "CALL_PHONE",
@@ -83,7 +90,9 @@
       [
         "expo-location",
         {
-          "locationAlwaysAndWhenInUsePermission": "Allow GateMan Security to use your location to verify your security check-in at the estate."
+          "locationAlwaysAndWhenInUsePermission": "Allow GateMan Security to use your location to verify your security check-in at the estate.",
+          "isAndroidBackgroundLocationEnabled": true,
+          "isAndroidForegroundServiceEnabled": true
         }
       ],
       [

@@ -1,5 +1,6 @@
 // app/context/UserContext.tsx
 import { ExpiredSubscriptionModal } from "@/Components/ExpiredSubscriptionModal";
+import { NoModuleAccessModal } from "@/Components/NoModuleAccessModal";
 import * as Notifications from "expo-notifications";
 import { router } from "expo-router";
 import React, {
@@ -18,11 +19,11 @@ import {
   getMyApplicationStatus,
 } from "../src/services/api";
 import {
+  LocationState,
   notification,
   SecurityUser,
   tempNotification,
 } from "../src/services/interfaces";
-import { NoModuleAccessModal } from "@/Components/NoModuleAccessModal";
 
 export type Theme = typeof Colors.light;
 
@@ -46,6 +47,7 @@ interface UserContextType {
   isDarkMode: boolean;
   setIsDarkMode: (value: boolean) => void;
   theme: Theme;
+  sendLocation: (location: LocationState) => void;
 }
 
 export const UserContext = createContext<UserContextType>({
@@ -68,6 +70,7 @@ export const UserContext = createContext<UserContextType>({
   isDarkMode: false,
   setIsDarkMode: () => {},
   theme: Colors.light,
+  sendLocation: () => {},
 });
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
@@ -280,6 +283,23 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     };
   }, [isConnected, user]);
 
+  const sendLocation = (location: LocationState) => {
+    console.log(
+        `📍 Location recieved: ${location.latitude}, ${location.longitude}, ${location.address}`,
+      );
+    if (socketRef.current && socketRef.current.connected) {
+      socketRef.current.emit("user_location", {
+        latitude: location.latitude,
+        longitude: location.longitude,
+        address: location.address,
+        timestamp: location.timestamp,
+      });
+      console.log(
+        `📍 Location sent: ${location.latitude}, ${location.longitude}`,
+      );
+    }
+  };
+
   return (
     <UserContext.Provider
       value={{
@@ -302,6 +322,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         isDarkMode,
         setIsDarkMode,
         theme,
+        sendLocation,
       }}
     >
       {children}

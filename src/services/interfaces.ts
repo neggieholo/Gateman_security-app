@@ -210,3 +210,10 @@ export interface LocationBooking {
   payment_type: string | null;
   total_amount: number | string;
 }
+
+export type LocationState = {
+  latitude: number;
+  longitude: number;
+  address?: string | null;
+  timestamp: number;
+};
