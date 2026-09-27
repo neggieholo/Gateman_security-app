@@ -1,4 +1,4 @@
-package com.snametech.employeetrackerWorker
+package com.simonholo.gatemansecurity
 
 import com.google.gson.annotations.SerializedName
 import retrofit2.Response

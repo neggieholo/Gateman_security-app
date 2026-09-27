@@ -1,0 +1,74 @@
+[
+    {
+        "merged": "com.simonholo.gatemansecurity.location-module-release-53:/color/vector_tint_color.xml",
+        "source": "com.simonholo.gatemansecurity.location-module-ui-release-8:/color/vector_tint_color.xml"
+    },
+    {
+        "merged": "com.simonholo.gatemansecurity.location-module-release-53:/color/abc_secondary_text_material_dark.xml",
+        "source": "com.simonholo.gatemansecurity.location-module-appcompat-1.7.0-13:/color/abc_secondary_text_material_dark.xml"
+    },
+    {
+        "merged": "com.simonholo.gatemansecurity.location-module-release-53:/color/abc_background_cache_hint_selector_material_light.xml",
+        "source": "com.simonholo.gatemansecurity.location-module-appcompat-1.7.0-13:/color/abc_background_cache_hint_selector_material_light.xml"
+    },
+    {
+        "merged": "com.simonholo.gatemansecurity.location-module-release-53:/color/switch_thumb_material_light.xml",
+        "source": "com.simonholo.gatemansecurity.location-module-appcompat-1.7.0-13:/color/switch_thumb_material_light.xml"
+    },
+    {
+        "merged": "com.simonholo.gatemansecurity.location-module-release-53:/color/abc_secondary_text_material_light.xml",
+        "source": "com.simonholo.gatemansecurity.location-module-appcompat-1.7.0-13:/color/abc_secondary_text_material_light.xml"
+    },
+    {
+        "merged": "com.simonholo.gatemansecurity.location-module-release-53:/color/vector_tint_theme_color.xml",
+        "source": "com.simonholo.gatemansecurity.location-module-ui-release-8:/color/vector_tint_theme_color.xml"
+    },
+    {
+        "merged": "com.simonholo.gatemansecurity.location-module-release-53:/color/abc_background_cache_hint_selector_material_dark.xml",
+        "source": "com.simonholo.gatemansecurity.location-module-appcompat-1.7.0-13:/color/abc_background_cache_hint_selector_material_dark.xml"
+    },
+    {
+        "merged": "com.simonholo.gatemansecurity.location-module-release-53:/color/common_google_signin_btn_text_dark.xml",
+        "source": "com.simonholo.gatemansecurity.location-module-play-services-base-18.5.0-18:/color/common_google_signin_btn_text_dark.xml"
+    },
+    {
+        "merged": "com.simonholo.gatemansecurity.location-module-release-53:/color/common_google_signin_btn_text_light.xml",
+        "source": "com.simonholo.gatemansecurity.location-module-play-services-base-18.5.0-18:/color/common_google_signin_btn_text_light.xml"
+    },
+    {
+        "merged": "com.simonholo.gatemansecurity.location-module-release-53:/color/abc_primary_text_material_dark.xml",
+        "source": "com.simonholo.gatemansecurity.location-module-appcompat-1.7.0-13:/color/abc_primary_text_material_dark.xml"
+    },
+    {
+        "merged": "com.simonholo.gatemansecurity.location-module-release-53:/color/abc_search_url_text.xml",
+        "source": "com.simonholo.gatemansecurity.location-module-appcompat-1.7.0-13:/color/abc_search_url_text.xml"
+    },
+    {
+        "merged": "com.simonholo.gatemansecurity.location-module-release-53:/color/common_google_signin_btn_tint.xml",
+        "source": "com.simonholo.gatemansecurity.location-module-play-services-base-18.5.0-18:/color/common_google_signin_btn_tint.xml"
+    },
+    {
+        "merged": "com.simonholo.gatemansecurity.location-module-release-53:/color/abc_hint_foreground_material_dark.xml",
+        "source": "com.simonholo.gatemansecurity.location-module-appcompat-1.7.0-13:/color/abc_hint_foreground_material_dark.xml"
+    },
+    {
+        "merged": "com.simonholo.gatemansecurity.location-module-release-53:/color/abc_primary_text_disable_only_material_dark.xml",
+        "source": "com.simonholo.gatemansecurity.location-module-appcompat-1.7.0-13:/color/abc_primary_text_disable_only_material_dark.xml"
+    },
+    {
+        "merged": "com.simonholo.gatemansecurity.location-module-release-53:/color/abc_hint_foreground_material_light.xml",
+        "source": "com.simonholo.gatemansecurity.location-module-appcompat-1.7.0-13:/color/abc_hint_foreground_material_light.xml"
+    },
+    {
+        "merged": "com.simonholo.gatemansecurity.location-module-release-53:/color/abc_primary_text_material_light.xml",
+        "source": "com.simonholo.gatemansecurity.location-module-appcompat-1.7.0-13:/color/abc_primary_text_material_light.xml"
+    },
+    {
+        "merged": "com.simonholo.gatemansecurity.location-module-release-53:/color/abc_primary_text_disable_only_material_light.xml",
+        "source": "com.simonholo.gatemansecurity.location-module-appcompat-1.7.0-13:/color/abc_primary_text_disable_only_material_light.xml"
+    },
+    {
+        "merged": "com.simonholo.gatemansecurity.location-module-release-53:/color/switch_thumb_material_dark.xml",
+        "source": "com.simonholo.gatemansecurity.location-module-appcompat-1.7.0-13:/color/switch_thumb_material_dark.xml"
+    }
+]

@@ -1,4 +1,4 @@
-package com.snametech.employeetrackerWorker
+package com.simonholo.gatemansecurity
 
 import android.content.Context
 import android.webkit.WebView

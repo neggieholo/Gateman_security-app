@@ -65,7 +65,7 @@ export default function NotificationCard({ item }: Props) {
         <View className="flex-row items-center">
           <Clock size={12} color="#94a3b8" style={{ marginRight: 4 }} />
           <Text className="text-gray-400 text-[10px]">
-            {formatDate(item.created_at)}
+            {(item.created_at.split(" ")[0])} {item.created_at.split(" ")[1].split(".")[0]}
           </Text>
         </View>
       </View>

@@ -1,4 +1,4 @@
-package com.snametech.employeetrackerWorker
+package com.simonholo.gatemansecurity
 
 import android.annotation.SuppressLint
 import android.app.Service

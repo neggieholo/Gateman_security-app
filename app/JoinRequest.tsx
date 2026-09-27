@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import {
   Alert,
   FlatList,
@@ -6,16 +6,15 @@ import {
   Modal,
   ScrollView,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
 
 import * as ImagePicker from "expo-image-picker";
 import { useNavigation } from "expo-router";
-import {
-  fetchAllEstates,
-  getS3UploadedUrl
-} from "../src/services/api";
+import { Search, X } from "lucide-react-native";
+import { fetchAllEstates, getS3UploadedUrl } from "../src/services/api";
 import { Estate } from "../src/services/interfaces";
 import { UserContext } from "./UserContext";
 
@@ -37,6 +36,7 @@ export default function JoinRequestForm() {
   const [estateLabel, setEstateLabel] = useState("");
   const [estates, setEstates] = useState<Estate[]>([]);
   const [selectorOpen, setSelectorOpen] = useState<boolean>(false);
+  const [estateSearchQuery, setEstateSearchQuery] = useState("");
 
   const { user, triggerRefresh } = useContext(UserContext);
 
@@ -93,6 +93,16 @@ export default function JoinRequestForm() {
       if (type === "idBack") setIdBack(uri);
     }
   };
+
+  const filteredEstates = useMemo(() => {
+    if (!estateSearchQuery.trim()) return estates;
+    const query = estateSearchQuery.toLowerCase().trim();
+    return estates.filter(
+      (item) =>
+        item.name.toLowerCase().includes(query) ||
+        item.estate_code.toLowerCase().includes(query),
+    );
+  }, [estates, estateSearchQuery]);
 
   const handleSubmit = async () => {
     // 1. Validation
@@ -267,49 +277,69 @@ export default function JoinRequestForm() {
 
           {/* Modal selector */}
           <Modal visible={selectorOpen} transparent animationType="fade">
+            {/* Dark Overlay Backdrop */}
             <TouchableOpacity
-              style={{
-                flex: 1,
-                backgroundColor: "rgba(0,0,0,0.4)",
-                justifyContent: "center",
-                padding: 20,
-              }}
+              className="flex-1 bg-black/60 justify-center p-5"
               activeOpacity={1}
               onPress={() => setSelectorOpen(false)}
             >
-              <View
-                style={{
-                  backgroundColor: "white",
-                  borderRadius: 8,
-                  maxHeight: "70%",
-                }}
+              {/* Modal Card Content (stops backdrop tap closing) */}
+              <TouchableOpacity
+                activeOpacity={1}
+                className="bg-[#1e293b] rounded-2xl max-h-[80%] p-4 border border-[#475569]"
               >
+                {/* Search Bar Input */}
+                <View className="flex-row items-center bg-[#0f172a] border border-[#334155] rounded-xl px-3 mb-3">
+                  <Search size={16} color="#94a3b8" className="mr-2" />
+                  <TextInput
+                    value={estateSearchQuery}
+                    onChangeText={setEstateSearchQuery}
+                    placeholder="Search estate name or code..."
+                    placeholderTextColor="#64748b"
+                    className="flex-1 p-3 text-slate-200 text-sm font-medium"
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                  />
+                  {estateSearchQuery.length > 0 && (
+                    <TouchableOpacity onPress={() => setEstateSearchQuery("")}>
+                      <X size={16} color="#94a3b8" />
+                    </TouchableOpacity>
+                  )}
+                </View>
+
+                {/* Filtered FlatList */}
                 <FlatList
-                  data={estates}
+                  data={filteredEstates}
                   keyExtractor={(item) => item.id}
+                  keyboardShouldPersistTaps="handled"
+                  ListEmptyComponent={
+                    <View className="p-6 items-center">
+                      <Text className="text-slate-400 text-xs font-medium">
+                        No properties found matching &quot;{estateSearchQuery}
+                        &quot;
+                      </Text>
+                    </View>
+                  }
                   renderItem={({ item }) => (
                     <TouchableOpacity
                       onPress={() => {
                         setEstateId(item.id);
                         setEstateLabel(`${item.name} (${item.estate_code})`);
                         setSelectorOpen(false);
+                        setEstateSearchQuery("");
                       }}
-                      style={{
-                        padding: 16,
-                        borderBottomWidth: 1,
-                        borderBottomColor: "#eee",
-                      }}
+                      className="p-4 border-b border-[#334155] active:bg-[#0f172a]"
                     >
-                      <Text>
-                        {item.name} ({item.estate_code})
+                      <Text className="font-bold text-slate-200">
+                        {item.name}
                       </Text>
-                      <Text>
-                        {item.city}, {item.town}
+                      <Text className="text-xs text-indigo-400 mt-1">
+                        {item.estate_code}
                       </Text>
                     </TouchableOpacity>
                   )}
                 />
-              </View>
+              </TouchableOpacity>
             </TouchableOpacity>
           </Modal>
 

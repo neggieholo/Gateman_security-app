@@ -536,7 +536,7 @@ export default function ResidentSettings() {
 
         {user?.estate_id && (
           <View
-            className={`${isDarkMode ? "bg-gm-navy border-gm-gold" : "bg-white border-slate-100"} p-6 rounded-3xl border shadow-sm mt-6`}
+            className={`${isDarkMode ? "bg-gm-navy border-gm-gold" : "bg-white border-slate-100"} p-6 my-6 rounded-3xl border shadow-sm`}
           >
             <View className="flex-row items-center justify-between">
               <View className="flex-row items-center flex-1">
@@ -561,7 +561,7 @@ export default function ResidentSettings() {
 
               <Switch
                 value={profile.biometric_login}
-                disabled={!isEditing}
+                // disabled={!isEditing}
                 onValueChange={(value) => toggleBiometrics(value)}
                 trackColor={{
                   false: "#cbd5e1",
@@ -596,7 +596,7 @@ export default function ResidentSettings() {
           <ChevronRight size={20} color={theme.accent} />
         </TouchableOpacity>
 
-        {isEditing && (
+        {(isEditing || hasChanges) && (
           <TouchableOpacity
             className={`mt-8 p-5 rounded-3xl items-center shadow-xl ${
               hasChanges

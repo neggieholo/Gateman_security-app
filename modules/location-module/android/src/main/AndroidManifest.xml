@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.snametech.gatemansecurity">
+    package="com.simonholo.gatemansecurity">
     <application
     android:requestLegacyExternalStorage="true">
         <service 

@@ -24,6 +24,7 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import * as LocationModule from "../../modules/location-module/src/LocationModule";
 import LivenessCameraModal from "../../src/Components/LivenessCameraModal";
 import {
   cleanupLocalFile,
@@ -33,7 +34,6 @@ import {
   updateSecurityLocation,
 } from "../../src/services/api";
 import { useUser } from "../UserContext";
-import * as LocationModule from "../../modules/location-module/src/LocationModule";
 
 export default function SecurityDashboard() {
   const { user, setUser, isDarkMode, theme, sendLocation } = useUser();
@@ -49,6 +49,7 @@ export default function SecurityDashboard() {
   const [captureField, setCaptureField] = useState<"check" | "location" | null>(
     null,
   );
+  const latestLocationRef = React.useRef<LocationState | null>(null);
 
   // Kiosk Liveness Modal state
   const [showCameraModal, setShowCameraModal] = useState(false);
@@ -72,6 +73,7 @@ export default function SecurityDashboard() {
   const fetchStats = async () => {
     try {
       const data = await getDashboardStats();
+      console.log('fetching dashboard stats from dash')
       if (data.success) {
         setStats(data.stats);
         console.log(data.stats);
@@ -95,7 +97,7 @@ export default function SecurityDashboard() {
 
   useEffect(() => {
     const startTrackingSafely = async () => {
-      console.log("Checking permissions...");
+      // console.log("Checking permissions...");
 
       const serviceEnabled = await Location.hasServicesEnabledAsync();
       if (!serviceEnabled) {
@@ -103,7 +105,7 @@ export default function SecurityDashboard() {
           // This triggers the native Android popup to turn on Location
           await Location.enableNetworkProviderAsync();
         } catch (error: any) {
-          console.log("User refused to enable location services");
+          // console.log("User refused to enable location services");
           return; // Stop if they won't turn it on
         }
       }
@@ -115,18 +117,18 @@ export default function SecurityDashboard() {
       if (fgStatus === "granted") {
         await Location.requestBackgroundPermissionsAsync();
 
-        console.log("Permissions granted, starting native module...");
+        // console.log("Permissions granted, starting native module...");
         if (!ignored) {
           try {
             LocationModule.requestBatteryOptimization();
           } catch (e) {
-            console.log("Battery setting popup skipped or failed", e);
+            // console.log("Battery setting popup skipped or failed", e);
           }
         }
         try {
           LocationModule.startTracking();
         } catch (e) {
-          console.error("Failed to start native tracking", e);
+          // console.error("Failed to start native tracking", e);
         }
       }
     };
@@ -136,6 +138,7 @@ export default function SecurityDashboard() {
     // 3. LISTEN for the updates coming from Kotlin
     const subscription = LocationModule.addLocationListener(
       (data: LocationState) => {
+        latestLocationRef.current = data;
         sendLocation(data);
       },
     );
@@ -152,25 +155,23 @@ export default function SecurityDashboard() {
     }
   };
 
-  const getLocation = async () => {
-    let { status } = await Location.requestForegroundPermissionsAsync();
-    if (status !== "granted") {
-      Alert.alert(
-        "Permission Denied",
-        "Location access is required for security check-in.",
-      );
-      return null;
+  const getLocation = () => {
+    const currentLocation = latestLocationRef.current;
+
+    if (currentLocation?.latitude && currentLocation?.longitude) {
+      return {
+        latitude: currentLocation.latitude,
+        longitude: currentLocation.longitude,
+        timestamp: currentLocation.timestamp || Date.now(),
+        address: currentLocation.address || null,
+      };
     }
 
-    let location = await Location.getCurrentPositionAsync({
-      accuracy: Location.Accuracy.Balanced,
-    });
-
-    return {
-      latitude: location.coords.latitude,
-      longitude: location.coords.longitude,
-      timestamp: location.timestamp,
-    };
+    Alert.alert(
+      "Location Unavailable",
+      "Waiting for live location stream. Please make sure location services are enabled.",
+    );
+    return null;
   };
 
   // Execution engine for shift toggling (supports code or photo uri)
@@ -178,7 +179,7 @@ export default function SecurityDashboard() {
     setLoading(true);
 
     try {
-      const location = await getLocation();
+      const location = getLocation();
       if (!location) {
         setLoading(false);
         return;
@@ -267,7 +268,7 @@ export default function SecurityDashboard() {
 
     setUpdatingLoc(true);
     try {
-      const location = await getLocation();
+      const location = getLocation();
       if (!location) return;
 
       // 1. Upload local file to S3
@@ -281,6 +282,7 @@ export default function SecurityDashboard() {
       const result = await updateSecurityLocation(
         location.latitude,
         location.longitude,
+        location.address,
         cloudUrl,
       );
 

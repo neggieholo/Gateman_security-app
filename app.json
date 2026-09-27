@@ -2,7 +2,7 @@
   "expo": {
     "name": "GM Security",
     "slug": "gateman_security",
-    "version": "1.1.6",
+    "version": "1.2.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "gatemansecurity",
@@ -57,7 +57,8 @@
         "android.permission.RECEIVE_BOOT_COMPLETED",
         "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK",
         "android.permission.SYSTEM_ALERT_WINDOW",
-        "android.permission.USE_FULL_SCREEN_INTENT"
+        "android.permission.USE_FULL_SCREEN_INTENT",
+        "REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"
       ],
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
@@ -72,6 +73,7 @@
       "expo-router",
       "expo-notifications",
       "./withZegoSounds.js",
+      "./withFixedGoogleAuth.js",
       [
         "expo-asset",
         {
@@ -115,7 +117,10 @@
             "extraMavenRepos": ["https://www.jitpack.io"],
             "minSdkVersion": 26,
             "buildToolsVersion": "35.0.0",
-            "reactNativeArchitectures": ["arm64-v8a", "x86_64"]
+            "reactNativeArchitectures": ["arm64-v8a", "x86_64"],
+            "extraGradleArgs": [
+              "-Dorg.gradle.jvmargs=-Xmx4096m -XX:MaxMetaspaceSize=1024m"
+            ]
           }
         }
       ],

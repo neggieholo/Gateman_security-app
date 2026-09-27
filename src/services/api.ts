@@ -7,6 +7,8 @@ import {
   Estate,
   FetchNotificationsResponse,
   Invitation,
+  LocationState,
+  ProjectionShift,
   tempNotification,
 } from "./interfaces";
 
@@ -351,7 +353,10 @@ export const postLogout = async () => {
   return data;
 };
 
-export const toggleSecurityStatus = async (location: any, photo?: string) => {
+export const toggleSecurityStatus = async (
+  location: LocationState,
+  photo?: string,
+) => {
   try {
     const res = await fetch(`${BASE_URL}/security/status-toggle`, {
       method: "POST",
@@ -438,13 +443,14 @@ export const changePassword = async (
 export const updateSecurityLocation = async (
   latitude: number,
   longitude: number,
+  address: string |null,
   selfie: string,
 ) => {
   try {
     const res = await fetch(`${BASE_URL}/security/update-location`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ latitude, longitude, selfie }),
+      body: JSON.stringify({ latitude, longitude, address, selfie }),
       credentials: "include",
     });
 
@@ -462,6 +468,7 @@ export const updateSecurityLocation = async (
 };
 
 export const getDashboardStats = async () => {
+  console.log('Fetching dashboard stats')
   try {
     const res = await fetch(`${BASE_URL}/security/dashboard-stats`, {
       method: "GET",
@@ -469,6 +476,7 @@ export const getDashboardStats = async () => {
     });
 
     const data = await res.json();
+    console.log('Dashboard data:', data)
     return data;
   } catch (err) {
     console.error("Dashboard Stats Fetch Error:", err);
@@ -485,6 +493,7 @@ export const getDashboardStats = async () => {
     };
   }
 };
+
 export const fetchNotifications =
   async (): Promise<FetchNotificationsResponse> => {
     try {
@@ -705,5 +714,39 @@ export const cleanupLocalFile = async (uri: string | null) => {
     }
   } catch (err) {
     console.warn("Failed to delete local cache file:", err);
+  }
+};
+
+export const getMySchedule = async (): Promise<{
+  success: boolean;
+  shifts?: ProjectionShift[];
+  message?: string;
+}> => {
+  try {
+    const res = await fetch(`${BASE_URL}/security/my-schedules`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      return {
+        success: false,
+        message: data.error || "Failed to retrieve schedules",
+      };
+    }
+
+    return {
+      success: true,
+      shifts: data.shifts || [],
+    };
+  } catch (err) {
+    console.error("Get Schedules Error:", err);
+    return {
+      success: false,
+      message: "Network error while fetching schedules",
+    };
   }
 };

@@ -1,0 +1,20 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="com.simonholo.gatemansecurity" >
+4
+5    <uses-sdk android:minSdkVersion="26" />
+6
+7    <application android:requestLegacyExternalStorage="true" >
+7-->C:\gs_new\modules\location-module\android\src\main\AndroidManifest.xml:3:5-9:19
+7-->C:\gs_new\modules\location-module\android\src\main\AndroidManifest.xml:4:5-48
+8        <service
+8-->C:\gs_new\modules\location-module\android\src\main\AndroidManifest.xml:5:9-8:40
+9            android:name="com.simonholo.gatemansecurity.LocationService"
+9-->C:\gs_new\modules\location-module\android\src\main\AndroidManifest.xml:6:13-44
+10            android:exported="false"
+10-->C:\gs_new\modules\location-module\android\src\main\AndroidManifest.xml:8:13-37
+11            android:foregroundServiceType="location" />
+11-->C:\gs_new\modules\location-module\android\src\main\AndroidManifest.xml:7:13-53
+12    </application>
+13
+14</manifest>

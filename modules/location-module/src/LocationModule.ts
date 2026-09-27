@@ -1,16 +1,5 @@
 import { requireNativeModule, EventSubscription } from 'expo-modules-core';
 
-// 1. Define the event map
-// type LocationEvents = {
-//   onLocationUpdate: (event: {
-//     latitude: number;
-//     longitude: number;
-//     address: string;
-//   }) => void;
-// };
-
-// 2. Load the Native Module 
-// We cast it to its type + the emitter logic
 const LocationTrackingModule = requireNativeModule('LocationModule');
 
 // 3. Export the functions
@@ -53,9 +42,3 @@ export function showNativePicker(): Promise<string> {
 }
 
 export default LocationTrackingModule;
-
-
-
-
-
-

@@ -1,0 +1,18 @@
+[
+    {
+        "merged": "com.simonholo.gatemansecurity.location-module-release-53:/layout-v21/notification_action.xml",
+        "source": "com.simonholo.gatemansecurity.location-module-core-1.17.0-17:/layout-v21/notification_action.xml"
+    },
+    {
+        "merged": "com.simonholo.gatemansecurity.location-module-release-53:/layout-v21/notification_template_icon_group.xml",
+        "source": "com.simonholo.gatemansecurity.location-module-core-1.17.0-17:/layout-v21/notification_template_icon_group.xml"
+    },
+    {
+        "merged": "com.simonholo.gatemansecurity.location-module-release-53:/layout-v21/notification_action_tombstone.xml",
+        "source": "com.simonholo.gatemansecurity.location-module-core-1.17.0-17:/layout-v21/notification_action_tombstone.xml"
+    },
+    {
+        "merged": "com.simonholo.gatemansecurity.location-module-release-53:/layout-v21/notification_template_custom_big.xml",
+        "source": "com.simonholo.gatemansecurity.location-module-core-1.17.0-17:/layout-v21/notification_template_custom_big.xml"
+    }
+]

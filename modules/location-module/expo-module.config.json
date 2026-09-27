@@ -4,6 +4,6 @@
     "modules": ["LocationModule"]
   },
   "android": {
-    "modules": ["com.snametech.gatemansecurity.LocationModule"]
+    "modules": ["com.simonholo.gatemansecurity.LocationModule"]
   }
 }

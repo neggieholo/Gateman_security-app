@@ -1,0 +1,2 @@
+com.simonholo.gatemansecurity
+drawable ic_location

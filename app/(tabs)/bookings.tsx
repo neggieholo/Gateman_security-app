@@ -1,6 +1,13 @@
+import BookingDetailModal from "@/Components/BookingDetailModal";
 import { router } from "expo-router";
-import { Calendar, CalendarX, LogIn, MapPin, ShieldAlert, ShieldCheck } from "lucide-react-native";
-import React, { useCallback, useEffect, useState } from "react";
+import {
+  Calendar,
+  CalendarX,
+  LogIn,
+  ShieldAlert,
+  ShieldCheck,
+} from "lucide-react-native";
+import { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -9,8 +16,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import BookingDetailModal from "@/Components/BookingDetailModal";
-import { getTodayBookings } from "../../src/services/api";
+import { getTodayBookings, formatDate } from "../../src/services/api";
 import { LocationBooking } from "../../src/services/interfaces";
 import { useUser } from "../UserContext";
 
@@ -18,7 +24,8 @@ export default function AllBookingsScreen() {
   const { user, isDarkMode, theme } = useUser();
   const [bookings, setBookings] = useState<LocationBooking[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedBooking, setSelectedBooking] = useState<LocationBooking | null>(null);
+  const [selectedBooking, setSelectedBooking] =
+    useState<LocationBooking | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
   const fetchBookings = async () => {
@@ -27,7 +34,9 @@ export default function AllBookingsScreen() {
       setBookings(data);
 
       if (selectedBooking) {
-        const updated = data.find((b: LocationBooking) => b.id === selectedBooking.id);
+        const updated = data.find(
+          (b: LocationBooking) => b.id === selectedBooking.id,
+        );
         if (updated) {
           setSelectedBooking(updated);
         }
@@ -149,7 +158,7 @@ export default function AllBookingsScreen() {
               <Text
                 className={`text-xs text-center mt-2 font-roboto-regular ${isDarkMode ? "text-slate-400" : "text-gray-500"}`}
               >
-                There are no approved location bookings scheduled for today.
+                There are no active location bookings scheduled.
               </Text>
             </View>
           </View>
@@ -159,26 +168,29 @@ export default function AllBookingsScreen() {
             onPress={() => setSelectedBooking(item)}
             className={`${isDarkMode ? "bg-gm-navy" : "bg-white"} p-5 rounded-3xl mb-4 shadow-sm border border-slate-100 flex-row items-center justify-between`}
           >
-            <View className="flex-row items-center flex-1">
+            <View className="flex-row items-center flex-1 mr-2">
               <View
-                className={`${isDarkMode ? "bg-gm-gold" : "bg-indigo-100 "} p-3 rounded-2xl mr-4`}
+                className={`${isDarkMode ? "bg-gm-gold" : "bg-indigo-100 "} p-3 rounded-2xl mr-3`}
               >
-                <Calendar size={24} color={"#4f46e5"} />
+                <Calendar size={22} color={"#4f46e5"} />
               </View>
               <View className="flex-1">
                 <Text
-                  className={`text-lg font-montserrat-bold ${isDarkMode ? "text-gm-gold" : "text-gm-navy"}`}
+                  className={`text-base font-montserrat-bold ${isDarkMode ? "text-gm-gold" : "text-gm-navy"}`}
                   numberOfLines={1}
                 >
                   {item.venue_name || "Location Booking"}
                 </Text>
                 <Text
-                  className={`${isDarkMode ? "text-white" : "text-gm-navy"} text-sm font-roboto-regular uppercase`}
+                  className={`${isDarkMode ? "text-slate-400" : "text-gray-500"} text-xs font-roboto-regular mt-0.5`}
                 >
-                  {item.start_time} - {item.end_time}
+                  {item.start_date === item.end_date
+                    ? formatDate(item.start_date)
+                    : `${formatDate(item.start_date)} to ${formatDate(item.end_date)}`}
                 </Text>
               </View>
             </View>
+
             <View className="items-end">
               <Text
                 className={`text-sm font-montserrat-bold ${isDarkMode ? "text-gm-gold" : "text-gm-navy"}`}
@@ -187,7 +199,7 @@ export default function AllBookingsScreen() {
                 {item.resident_name || "Resident"}
               </Text>
               <Text
-                className={`${isDarkMode ? "text-white" : "text-gm-navy"} text-xs font-roboto-regular uppercase`}
+                className={`${isDarkMode ? "text-slate-400" : "text-gray-500"} text-[10px] font-roboto-regular uppercase`}
               >
                 Booked By
               </Text>

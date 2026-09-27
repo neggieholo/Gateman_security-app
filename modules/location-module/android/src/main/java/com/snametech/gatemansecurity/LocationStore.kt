@@ -1,4 +1,4 @@
-package com.snametech.employeetrackerWorker
+package com.simonholo.gatemansecurity
 
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

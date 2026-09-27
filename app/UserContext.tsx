@@ -167,7 +167,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     });
 
     newSocket.on("new_notification", (newNotif: notification) => {
-      console.log("🚀 Real-time notification received:", newNotif);
+      // console.log("🚀 Real-time notification received:", newNotif);
       setNotifications((prev) => {
         const exists = prev.find((n) => n.id === newNotif.id);
         if (exists) return prev;
@@ -284,19 +284,20 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   }, [isConnected, user]);
 
   const sendLocation = (location: LocationState) => {
-    console.log(
-        `📍 Location recieved: ${location.latitude}, ${location.longitude}, ${location.address}`,
-      );
+    // console.log(
+    //     `📍 Location recieved: ${location.latitude}, ${location.longitude}, ${location.address}`,
+    //   );
     if (socketRef.current && socketRef.current.connected) {
       socketRef.current.emit("user_location", {
+        estateId: user?.estate_id,
         latitude: location.latitude,
         longitude: location.longitude,
         address: location.address,
         timestamp: location.timestamp,
       });
-      console.log(
-        `📍 Location sent: ${location.latitude}, ${location.longitude}`,
-      );
+      // console.log(
+      //   `📍 Location sent: ${location.latitude}, ${location.longitude}`,
+      // );
     }
   };
 

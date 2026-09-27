@@ -1,4 +1,4 @@
-package com.snametech.gatemansecurity
+package com.simonholo.gatemansecurity
 
 import android.annotation.SuppressLint
 import android.app.NotificationChannel

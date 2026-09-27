@@ -190,26 +190,31 @@ export interface EventGuest {
   is_checked_out: boolean;
 }
 
+
 export interface LocationBooking {
-  id: string; // uuid
-  estate_id: string; // uuid
-  resident_id: string; // uuid
+  id: string;
+  estate_id: string;
+  resident_id: string;
   resident_name: string | null;
-  resident_avatar: string | null;
-  start_date: string; // YYYY-MM-DD
-  end_date: string; // YYYY-MM-DD
-  start_time: string; // HH:mm:ss
-  end_time: string; // HH:mm:ss
-  venue_id: number;
-  created_at: string | null;
-  booked_dates: string[];
-  venue_name: string | null;
-  is_paid: boolean;
-  payment_url: string | null;
-  transaction_ref: string | null;
-  payment_type: string | null;
-  total_amount: number | string;
+  resident_avatar: string | null;  
+  venue_id: string;
+  venue_name: string;
+
+  start_date: string;
+  end_date: string;
+  booked_dates: BookedDateSlot[];
+  is_expired:boolean;
+
+  created_at: string;
 }
+
+export interface BookedDateSlot {
+  date: string;
+  start_time: string;
+  end_time: string;
+  resident_id: string | undefined;
+}
+
 
 export type LocationState = {
   latitude: number;
@@ -217,3 +222,13 @@ export type LocationState = {
   address?: string | null;
   timestamp: number;
 };
+
+export interface ProjectionShift {
+  period_id: string | null;
+  label: string;
+  start_date: string;
+  start_time: string;
+  end_date: string;
+  end_time: string;
+  assigned_guard_ids: string[];
+}

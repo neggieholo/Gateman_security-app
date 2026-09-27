@@ -114,9 +114,9 @@ export default function SecurityTabsLayout() {
         />
 
         <Tabs.Screen
-          name="colleagues"
+          name="dutyHub"
           options={{
-            title: "Colleagues",
+            title: "Duty Hub",
             tabBarIcon: ({ color, size }) => (
               <Ionicons name="shield-checkmark" size={size} color={color} />
             ),
