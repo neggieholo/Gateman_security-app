@@ -23,7 +23,6 @@ export interface EstateProfile {
   subscription_expiry?: string;
 }
 
-
 export interface SecurityUser {
   id: string;
   name: string;
@@ -159,6 +158,7 @@ export interface Invitation {
   estate_address?: string;
   lga?: string;
   town?: string;
+  street_address?: string;
   staff_position?: string;
   permitted_days: number[];
   is_activated?: boolean;
@@ -190,20 +190,19 @@ export interface EventGuest {
   is_checked_out: boolean;
 }
 
-
 export interface LocationBooking {
   id: string;
   estate_id: string;
   resident_id: string;
   resident_name: string | null;
-  resident_avatar: string | null;  
+  resident_avatar: string | null;
   venue_id: string;
   venue_name: string;
 
   start_date: string;
   end_date: string;
   booked_dates: BookedDateSlot[];
-  is_expired:boolean;
+  is_expired: boolean;
 
   created_at: string;
 }
@@ -214,7 +213,6 @@ export interface BookedDateSlot {
   end_time: string;
   resident_id: string | undefined;
 }
-
 
 export type LocationState = {
   latitude: number;

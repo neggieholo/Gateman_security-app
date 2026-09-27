@@ -398,6 +398,7 @@ export const fetchGatePasses = async (): Promise<Invitation[]> => {
 export const logActivityApi = async (
   inviteId: string,
   action: "check_in" | "check_out",
+  estate_id: string,
 ): Promise<{ success: boolean; invitation?: Invitation; error?: string }> => {
   try {
     const res = await fetch(
@@ -405,7 +406,7 @@ export const logActivityApi = async (
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action }),
+        body: JSON.stringify({ action, estate_id }),
         credentials: "include",
       },
     );
@@ -443,7 +444,7 @@ export const changePassword = async (
 export const updateSecurityLocation = async (
   latitude: number,
   longitude: number,
-  address: string |null,
+  address: string | null,
   selfie: string,
 ) => {
   try {
@@ -468,7 +469,7 @@ export const updateSecurityLocation = async (
 };
 
 export const getDashboardStats = async () => {
-  console.log('Fetching dashboard stats')
+  console.log("Fetching dashboard stats");
   try {
     const res = await fetch(`${BASE_URL}/security/dashboard-stats`, {
       method: "GET",
@@ -476,7 +477,7 @@ export const getDashboardStats = async () => {
     });
 
     const data = await res.json();
-    console.log('Dashboard data:', data)
+    console.log("Dashboard data:", data);
     return data;
   } catch (err) {
     console.error("Dashboard Stats Fetch Error:", err);
@@ -608,14 +609,16 @@ export const checkAllOut = async (eventId: string) => {
   }
 };
 
-export const getInvitationById = async (code: string) => {
+export const getInvitationById = async (code: string, estate_id: string) => {
   try {
-    const response = await fetch(`${BASE_URL}/invitations/${code}`, {
-      method: "GET",
+    console.log("fetching invite");
+    const response = await fetch(`${BASE_URL}/invitations/verify`, {
+      method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       credentials: "include",
+      body: JSON.stringify({ code, estate_id }),
     });
 
     const data = await response.json();

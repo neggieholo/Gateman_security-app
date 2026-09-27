@@ -9,6 +9,7 @@ import {
 import { Text, View } from "react-native";
 import { useUser } from "../../app/UserContext";
 import { notification } from "../services/interfaces";
+import { formatDate } from "@/services/api";
 
 interface Props {
   item: notification;
@@ -36,11 +37,6 @@ export default function NotificationCard({ item }: Props) {
 
   const Theme = getTheme();
 
-  // Format date (e.g., "Today at 2:30 PM")
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-  };
 
   return (
     <View
@@ -65,7 +61,7 @@ export default function NotificationCard({ item }: Props) {
         <View className="flex-row items-center">
           <Clock size={12} color="#94a3b8" style={{ marginRight: 4 }} />
           <Text className="text-gray-400 text-[10px]">
-            {(item.created_at.split(" ")[0])} {item.created_at.split(" ")[1].split(".")[0]}
+            {(formatDate(item.created_at.split(" ")[0]))} {item.created_at.split(" ")[1].split(".")[0]}
           </Text>
         </View>
       </View>

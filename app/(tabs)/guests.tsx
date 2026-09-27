@@ -359,7 +359,7 @@ export default function GatePassesView() {
     // If validation passes, proceed with API call
     setUpdatingInvite(inviteId);
     try {
-      const result = await logActivityApi(inviteId, action);
+      const result = await logActivityApi(inviteId, action, user?.estate_id!);
       if (result.success && result.invitation) {
         setInvitations((prev) =>
           prev.map((inv) => (inv.id === inviteId ? result.invitation! : inv)),
@@ -415,7 +415,7 @@ export default function GatePassesView() {
     setFetching(true);
 
     try {
-      const res = await getInvitationById(code);
+      const res = await getInvitationById(code, user?.estate_id!);
       if (res.success) {
         setSearchedInvite(res.invitation);
         // RESET BOTH HERE

@@ -159,12 +159,15 @@ const InvitationDetailModal = ({
                     <Text
                       className={`${isDarkMode ? "text-white" : "text-gm-navy"} ml-2 tracking-widest text-base font-montserrat-extrabold`}
                     >
-                      {invite.resident_name || "Resident"}
+                      {invite.resident_name?.split(" ")[0] || "Resident"}
                     </Text>
                   </View>
 
                   <Text className="text-[10px] text-indigo-600 uppercase mb-1 ml-6 tracking-widest font-oswald-semibold ">
                     {invite.estate_name || "Estate Security"}
+                  </Text>
+                  <Text className="text-[10px] text-indigo-600 uppercase mb-3 ml-6 tracking-widest font-oswald-semibold ">
+                    {invite.street_address}
                   </Text>
                   <Text className="text-[10px] text-indigo-600 uppercase mb-3 ml-6 tracking-widest font-oswald-semibold ">
                     {invite.town} / {invite.lga}
