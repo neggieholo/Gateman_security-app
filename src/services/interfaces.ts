@@ -41,6 +41,7 @@ export interface SecurityUser {
   last_known_location?: string;
   last_location_time?: string;
   isTemp?: boolean;
+  isTempPassword?: boolean;
   biometric_login: boolean;
   password_changed: boolean;
   role: "SECURITY";

@@ -2,7 +2,7 @@ import Constants from "expo-constants";
 import * as Device from "expo-device";
 import { File } from "expo-file-system";
 import * as Notifications from "expo-notifications";
-import { Platform } from "react-native";
+import { Alert, Platform } from "react-native";
 import {
   Estate,
   FetchNotificationsResponse,
@@ -389,8 +389,8 @@ export const fetchGatePasses = async (): Promise<Invitation[]> => {
     const data = await res.json();
     // console.log("Fetched Invitations:", data);
     return data;
-  } catch (error) {
-    console.error("Fetch Error:", error);
+  } catch (error: any) {
+    Alert.alert("Fetch Error:", error.message || "Could not fetch gate passes");
     return [];
   }
 };
@@ -428,12 +428,13 @@ export const changePassword = async (
   currentPassword: string,
   newPassword: string,
   role: string,
+  isMandatory: boolean,
 ) => {
   try {
     const response = await fetch(`${BASE_URL}/change-password`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ currentPassword, newPassword, role }),
+      body: JSON.stringify({ currentPassword, newPassword, role, isMandatory }),
     });
     return await response.json();
   } catch (err) {

@@ -48,6 +48,10 @@ interface UserContextType {
   setIsDarkMode: (value: boolean) => void;
   theme: Theme;
   sendLocation: (location: LocationState) => void;
+  showBiometricBtn: boolean; 
+  setShowBiometricBtn:(value: boolean) => void;
+  isShiftExpired: boolean; 
+  setIsShiftExpired:(value: boolean) => void;
 }
 
 export const UserContext = createContext<UserContextType>({
@@ -71,6 +75,10 @@ export const UserContext = createContext<UserContextType>({
   setIsDarkMode: () => {},
   theme: Colors.light,
   sendLocation: () => {},
+  showBiometricBtn: false, 
+  setShowBiometricBtn: () => {},
+  isShiftExpired: false, 
+  setIsShiftExpired: () => {},
 });
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
@@ -90,7 +98,9 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const systemColorScheme = useColorScheme();
   const [showExpiredModal, setShowExpiredModal] = useState<boolean>(false);
   const [showNoModuleModal, setShowNoModuleModal] = useState<boolean>(false);
+  const [showBiometricBtn, setShowBiometricBtn] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(systemColorScheme === "dark");
+  const [isShiftExpired, setIsShiftExpired] = useState(false);
 
   const estate = useMemo(() => user?.estate, [user?.estate]);
 
@@ -324,6 +334,10 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         setIsDarkMode,
         theme,
         sendLocation,
+        showBiometricBtn,
+        setShowBiometricBtn,
+        isShiftExpired,
+        setIsShiftExpired,
       }}
     >
       {children}

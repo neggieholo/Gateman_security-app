@@ -16,7 +16,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { getTodayBookings, formatDate } from "../../src/services/api";
+import { formatDate, getTodayBookings } from "../../src/services/api";
 import { LocationBooking } from "../../src/services/interfaces";
 import { useUser } from "../UserContext";
 
@@ -31,7 +31,15 @@ export default function AllBookingsScreen() {
   const fetchBookings = async () => {
     try {
       const data = await getTodayBookings();
-      setBookings(data);
+      console.log("Fetched Bookings:", data);
+      if (data.success) {
+        setBookings(data.bookings || []);
+      } else {
+        Alert.alert(
+          "Error",
+          data.message || data.error || "Could not load location bookings",
+        );
+      }
 
       if (selectedBooking) {
         const updated = data.find(

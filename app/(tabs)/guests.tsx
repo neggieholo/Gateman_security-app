@@ -311,6 +311,51 @@ export default function GatePassesView() {
     }
   };
 
+  const handleFinalSearch = async (code: string) => {
+    if (!code || isScanningLock.current) return;
+
+    isScanningLock.current = true;
+    setScanned(true); // This detaches the listener
+    setFetching(true);
+
+    try {
+      const res = await getInvitationById(code, user?.estate_id!);
+      if (res.success) {
+        setSearchedInvite(res.invitation);
+        // RESET BOTH HERE
+        isScanningLock.current = false;
+        setScanned(false);
+      } else {
+        Alert.alert(
+          "Scan Failed", 
+          res.error || res.message || "Invalid code.",
+          [
+            {
+              text: "OK",
+              onPress: () => {
+                isScanningLock.current = false;
+                setScanned(false);
+              },
+            },
+          ],
+        );
+      }
+    } catch (err) {
+      Alert.alert("Error", "Connection failed.", [
+        {
+          text: "OK",
+          onPress: () => {
+            isScanningLock.current = false;
+            setScanned(false);
+          },
+        },
+      ]);
+    } finally {
+      setFetching(false);
+      setShowScanner(false);
+    }
+  };
+
   const handleLogActivity = async (inviteId: string, currentLabel: string) => {
     const invite = invitations.find((i) => i.id === inviteId) || searchedInvite;
     if (!invite) return;
@@ -406,47 +451,6 @@ export default function GatePassesView() {
       return base.filter((i) => i.status === "overstayed");
     return base;
   }, [activeTab, logFilter, searchTerm, invitations]);
-
-  const handleFinalSearch = async (code: string) => {
-    if (!code || isScanningLock.current) return;
-
-    isScanningLock.current = true;
-    setScanned(true); // This detaches the listener
-    setFetching(true);
-
-    try {
-      const res = await getInvitationById(code, user?.estate_id!);
-      if (res.success) {
-        setSearchedInvite(res.invitation);
-        // RESET BOTH HERE
-        isScanningLock.current = false;
-        setScanned(false);
-      } else {
-        Alert.alert("Not Found", "Invalid code.", [
-          {
-            text: "OK",
-            onPress: () => {
-              isScanningLock.current = false;
-              setScanned(false);
-            },
-          },
-        ]);
-      }
-    } catch (err) {
-      Alert.alert("Error", "Connection failed.", [
-        {
-          text: "OK",
-          onPress: () => {
-            isScanningLock.current = false;
-            setScanned(false);
-          },
-        },
-      ]);
-    } finally {
-      setFetching(false);
-      setShowScanner(false);
-    }
-  };
 
   const renderInvite = ({ item: invite }: { item: Invitation }) => {
     const isExpired = isPastTime(invite.end_date, invite.end_time);
@@ -1041,7 +1045,7 @@ export default function GatePassesView() {
               }
               ListEmptyComponent={
                 <Text className="text-center text-slate-400 mt-20">
-                  No matching invitations
+                 {searchTerm ? "No matching invitations" : "No invitations available"}
                 </Text>
               }
             />

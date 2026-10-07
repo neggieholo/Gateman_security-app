@@ -9,16 +9,16 @@ import * as SecureStore from "expo-secure-store";
 import { Check, Fingerprint, ScanFace } from "lucide-react-native";
 import React, { useContext, useEffect, useRef, useState } from "react";
 import {
-    ActivityIndicator,
-    Alert,
-    Image,
-    KeyboardAvoidingView,
-    Modal,
-    Platform,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  Image,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import PhoneInput from "react-native-phone-number-input";
@@ -27,11 +27,11 @@ import { UserContext } from "../../app/UserContext";
 import { Button } from "../Components/Button";
 import { FormInput } from "../Components/FormInput";
 import registerForPushNotificationsAsync, {
-    forgotPasswordApi,
-    postLogin,
-    registerSecurity,
-    sendOtpApi,
-    updatePushTokenApi,
+  forgotPasswordApi,
+  postLogin,
+  registerSecurity,
+  sendOtpApi,
+  updatePushTokenApi,
 } from "../services/api";
 
 export default function LoginScreen() {
@@ -47,7 +47,13 @@ export default function LoginScreen() {
   const [isLogin, setIsLogin] = useState<boolean>(true);
   const [isForgot, setIsForgot] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
-  const { setUser, setSessionId, setPushToken } = useContext(UserContext);
+  const {
+    setUser,
+    setSessionId,
+    setPushToken,
+    showBiometricBtn,
+    setShowBiometricBtn,
+  } = useContext(UserContext);
   const BASE_URL = `${process.env.EXPO_PUBLIC_BASE_URL}/api`;
   const [otp, setOtp] = useState<string[]>(["", "", "", "", "", ""]);
   const [metadata, setMetadata] = useState("");
@@ -58,7 +64,6 @@ export default function LoginScreen() {
   >(null);
   const [otpLoading, setOtpLoading] = useState(false);
   const [verifyingOtp, setverifyingOtp] = useState(false);
-  const [showBiometricBtn, setShowBiometricBtn] = useState(false);
   const inputRefs = Array(6)
     .fill(0)
     .map(() => React.createRef<TextInput>());
@@ -153,12 +158,12 @@ export default function LoginScreen() {
           ]).catch((err) => console.error("Vault sync failed", err));
         }
 
-        if (response.user.biometric_login) {
+        if (response.user.biometric_login && !response.user.isTempPassword) {
           await AsyncStorage.setItem("biometrics_active", "true");
           setShowBiometricBtn(true);
         }
-        
-        if (!response.user.biometric_login) {
+
+        if (!response.user.biometric_login || response.isTemp) {
           await AsyncStorage.setItem("biometrics_active", "false");
           setShowBiometricBtn(false);
         }
@@ -177,7 +182,15 @@ export default function LoginScreen() {
         }
         // console.log("Login successful, session ID:", response.sessionId);
         setSessionId?.(response.sessionId);
-        router.replace("/dashboard" as any);
+        if (response.user.isTempPassword) {
+          await AsyncStorage.setItem("biometrics_active", "false");
+          router.replace({
+            pathname: "/ChangePassword",
+            params: { mandatory: "true" },
+          });
+        } else {
+          router.replace("/dashboard");
+        }
       } else {
         setError(
           response.message === "PASSWORD_CHANGED"
@@ -386,9 +399,11 @@ export default function LoginScreen() {
     try {
       const response = await forgotPasswordApi(email, "security");
       if (response.success) {
-        Alert.alert("Success", "Check your email for the reset link.", [
-          { text: "OK", onPress: () => setIsForgot(false) },
-        ]);
+        Alert.alert(
+          "Success",
+          "A temporary password has been sent to this email. You will be required to change your password upon logging in.",
+          [{ text: "OK", onPress: () => setIsForgot(false) }],
+        );
       } else {
         setError(response.message);
       }
@@ -669,7 +684,7 @@ export default function LoginScreen() {
                 ) : null}
 
                 <Button
-                  title={loading ? "Sending..." : "Send Reset Link"}
+                  title={loading ? "Sending..." : "Send Temporary Password"}
                   onPress={handleForgotPassword}
                   disabled={loading}
                 />

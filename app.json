@@ -2,7 +2,7 @@
   "expo": {
     "name": "GM Security",
     "slug": "gateman_security",
-    "version": "1.2.1",
+    "version": "1.2.3",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "gatemansecurity",
@@ -113,14 +113,16 @@
           "android": {
             "newArchEnabled": true,
             "enableProguardInReleaseBuilds": true,
-            "extraProguardRules": "-keep class com.google.** {*;}\n-keep class io.wazo.callkeep.** {*;}\n-keep class com.google.common.reflect.** {*;}\n-keep class * extends com.facebook.react.bridge.NativeModule {*;}\n-keep class * extends com.facebook.react.bridge.JavaScriptModule {*;}\n-dontwarn com.google.common.reflect.**\n-dontwarn com.facebook.react.**\n\n# --- Camera & Native Snapshot Frame Buffer Keep Rules ---\n-keep class androidx.camera.** { *; }\n-keep class com.mrousavy.camera.** { *; }\n-keep class com.google.mlkit.** { *; }\n-keep class com.google.android.gms.vision.** { *; }\n-keep class * extends com.mrousavy.camera.frameprocessors.FrameProcessorPlugin { *; }",
-            "extraMavenRepos": ["https://www.jitpack.io"],
+            "enableMinifyInReleaseBuilds": true,
+            "enableShrinkResourcesInReleaseBuilds": true,
+            "extraGradleArgs": [
+              "-Dorg.gradle.jvmargs=-Xmx6144m -XX:MaxMetaspaceSize=1024m -XX:+UseG1GC",
+              "-Dorg.gradle.workers.max=2"
+            ],
+            "extraProguardRules": "-keep class com.google.** {*;}\n-keep class io.wazo.callkeep.** {*;}\n-keep class com.google.common.reflect.** {*;}\n-keep class * extends com.facebook.react.bridge.NativeModule {*;}\n-keep class * extends com.facebook.react.bridge.JavaScriptModule {*;}\n-dontwarn com.google.common.reflect.**\n-dontwarn com.facebook.react.**\n\n# --- Camera & Native Snapshot Frame Buffer Keep Rules ---\n-keep class androidx.camera.** { *; }\n-keep class com.mrousavy.camera.** { *; }\n-keep class com.google.mlkit.** { *; }\n-keep class com.google.android.gms.vision.** { *; }\n-keep class * extends com.mrousavy.camera.frameprocessors.FrameProcessorPlugin { *; }\n\n# --- Fix R8 Play Services Location Warning ---\n-keep class com.google.android.gms.internal.location.** { *; }\n-dontwarn com.google.android.gms.internal.location.**",            "extraMavenRepos": ["https://www.jitpack.io"],
             "minSdkVersion": 26,
             "buildToolsVersion": "35.0.0",
-            "reactNativeArchitectures": ["arm64-v8a", "x86_64"],
-            "extraGradleArgs": [
-              "-Dorg.gradle.jvmargs=-Xmx4096m -XX:MaxMetaspaceSize=1024m"
-            ]
+            "reactNativeArchitectures": ["arm64-v8a", "x86_64"]
           }
         }
       ],
