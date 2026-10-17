@@ -2,6 +2,7 @@ import { LocationState } from "@/services/interfaces";
 import * as Location from "expo-location";
 import { useRouter } from "expo-router";
 import {
+  AlertTriangle,
   Bell,
   Camera as CameraIcon,
   LogIn,
@@ -36,7 +37,8 @@ import {
 import { useUser } from "../UserContext";
 
 export default function SecurityDashboard() {
-  const { user, setUser, isDarkMode, theme, sendLocation } = useUser();
+  const { user, setUser, isDarkMode, theme, sendLocation, isShiftExpired } =
+    useUser();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [loading, setLoading] = useState(false);
@@ -73,7 +75,7 @@ export default function SecurityDashboard() {
   const fetchStats = async () => {
     try {
       const data = await getDashboardStats();
-      console.log('fetching dashboard stats from dash')
+      console.log("fetching dashboard stats from dash");
       if (data.success) {
         setStats(data.stats);
         console.log(data.stats);
@@ -347,6 +349,29 @@ export default function SecurityDashboard() {
         />
       }
     >
+      {isShiftExpired && (
+        <View className="mb-6 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex-row items-center justify-between shadow-sm">
+          <View className="flex-row items-center flex-1 pr-3">
+            <View className="p-2 rounded-xl bg-amber-500/20 mr-3">
+              <AlertTriangle size={20} color="#f59e0b" />
+            </View>
+            <View className="flex-1">
+              <Text className="text-amber-500 font-oswald-semibold text-xs uppercase tracking-wider">
+                Shift Schedule Expired
+              </Text>
+              <Text
+                className={`text-xs font-roboto-regular mt-0.5 ${
+                  isDarkMode ? "text-amber-200/80" : "text-amber-900/80"
+                }`}
+                numberOfLines={2}
+              >
+                Your scheduled duty window has ended. Please end your shift to
+                maintain accurate logs.
+              </Text>
+            </View>
+          </View>
+        </View>
+      )}
       <Modal
         animationType="fade"
         transparent={true}
@@ -540,31 +565,46 @@ export default function SecurityDashboard() {
               !selfie ||
               captureField !== "check"
             }
-            className={`w-full h-12 rounded-2xl flex-row items-center justify-center ${
+            activeOpacity={0.7}
+            className={`w-full h-12 rounded-2xl border ${
               !selfie || captureField !== "check"
-                ? "bg-gray-400/40"
+                ? "bg-gray-400/20 border-transparent"
                 : isCheckedIn
-                  ? "bg-red-500 active:bg-red-600"
-                  : "bg-gm-navy active:bg-indigo-950"
-            }`}
+                  ? "bg-red-500 border-red-500 active:bg-red-600"
+                  : isDarkMode
+                    ? "bg-gm-navy border-gm-navy active:bg-slate-800"
+                    : "bg-gm-navy border-gm-navy active:bg-indigo-950"
+            } flex-row items-center justify-center`}
           >
             {loading ? (
               <ActivityIndicator color="white" />
             ) : (
               <>
                 {isCheckedIn ? (
-                  <LogOut color="white" size={20} />
+                  <LogOut
+                    color={
+                      !selfie || captureField !== "check" ? "#9ca3af" : "white"
+                    }
+                    size={20}
+                  />
                 ) : (
-                  <LogIn color="white" size={20} />
+                  <LogIn
+                    color={
+                      !selfie || captureField !== "check" ? "#9ca3af" : "white"
+                    }
+                    size={20}
+                  />
                 )}
                 <Text
-                  className={`font-oswald-semibold text-lg ml-2 ${
+                  className={`${
                     !selfie || captureField !== "check"
-                      ? "text-gray-300"
+                      ? "text-gray-400"
                       : isCheckedIn
                         ? "text-white"
-                        : "text-gm-gold"
-                  }`}
+                        : isDarkMode
+                          ? "text-gm-gold"
+                          : "text-white"
+                  } font-oswald-semibold ml-2 text-base`}
                 >
                   {isCheckedIn ? "End Shift" : "Verify & Start Shift"}
                 </Text>

@@ -35,6 +35,7 @@ import InvitationDetailModal from "../../src/Components/InvitationDetail";
 import {
   fetchGatePasses,
   getInvitationById,
+  isOvernightSchedule,
   logActivityApi,
 } from "../../src/services/api";
 import { Invitation } from "../../src/services/interfaces";
@@ -98,6 +99,8 @@ export default function GatePassesView() {
 
   // Status Logic Helper
   const getMultiEntryStatus = (invite: Invitation) => {
+    const isOverNight = isOvernightSchedule(invite.start_time, invite.end_time);
+
     if (invite.is_cancelled) {
       return {
         label: "CANCELLED",
@@ -107,6 +110,7 @@ export default function GatePassesView() {
     }
 
     const now = new Date();
+
     const toLocalDateStr = (d: any): string => {
       if (!d) return "";
       return new Date(d).toLocaleDateString("en-CA");
@@ -116,20 +120,24 @@ export default function GatePassesView() {
     const checkinDateStr = toLocalDateStr(invite.actual_checkin_date);
     const checkoutDateStr = toLocalDateStr(invite.actual_checkout_date);
 
-    // Setup Times for Today
-    const [startH, startM] = invite.start_time.split(":");
-    const [endH, endM] = invite.end_time.split(":");
+    const startDate = toLocalDateStr(invite.start_date);
+    const endDate = toLocalDateStr(invite.end_date);
 
-    const todayStart = new Date();
-    todayStart.setHours(parseInt(startH), parseInt(startM), 0, 0);
+    // Setup today's time window.
+    const [startH, startM] = invite.start_time.split(":").map(Number);
+    const [endH, endM] = invite.end_time.split(":").map(Number);
 
-    const todayEnd = new Date();
-    todayEnd.setHours(parseInt(endH), parseInt(endM), 0, 0);
+    const todayStart = new Date(now);
+    todayStart.setHours(startH, startM, 0, 0);
 
-    // 1. GLOBAL EXPIRY (Check if the entire multi-entry period is over)
+    const todayEnd = new Date(now);
+    todayEnd.setHours(endH, endM, 0, 0);
+
+    // 1. GLOBAL EXPIRY: end_date + end_time is the exact final expiry.
     const overallExpiry = new Date(invite.end_date);
-    overallExpiry.setHours(parseInt(endH), parseInt(endM), 0);
-    if (now > overallExpiry) {
+    overallExpiry.setHours(endH, endM, 0, 0);
+
+    if (now >= overallExpiry) {
       return {
         label: "EXPIRED",
         container: "bg-rose-50",
@@ -137,7 +145,7 @@ export default function GatePassesView() {
       };
     }
 
-    // 2. EXCLUSION CHECK
+    // 2. EXCLUSION CHECK.
     if (invite.excluded_dates?.includes(todayStr)) {
       return {
         label: "NOT ALLOWED TODAY",
@@ -146,7 +154,7 @@ export default function GatePassesView() {
       };
     }
 
-    // 3. OVERSTAYED FROM A PREVIOUS DAY ("Zombie" check-in)
+    // 3. OVERSTAYED FROM A PREVIOUS DAY.
     if (checkinDateStr && checkinDateStr < todayStr) {
       if (!checkoutDateStr || checkoutDateStr < checkinDateStr) {
         return {
@@ -160,15 +168,34 @@ export default function GatePassesView() {
     const isCheckedInToday = checkinDateStr === todayStr;
     const isCheckedOutToday = checkoutDateStr === todayStr;
 
-    // 4. LOGIC FOR GUESTS CURRENTLY INSIDE TODAY
+    // Determine whether the current time falls within today's window
+    // or the overnight window that started yesterday.
+    const previousDayStart = new Date(todayStart);
+    previousDayStart.setDate(previousDayStart.getDate() - 1);
+
+    const previousDayEnd = new Date(now);
+    previousDayEnd.setHours(endH, endM, 0, 0);
+
+    const isWithinPreviousOvernightWindow =
+      isOverNight && now >= previousDayStart && now <= previousDayEnd;
+
+    const isWithinTodayWindow = isOverNight
+      ? now >= todayStart || now <= todayEnd
+      : now >= todayStart && now <= todayEnd;
+
+    const isWithinWindow =
+      isWithinTodayWindow || isWithinPreviousOvernightWindow;
+
+    // 4. GUEST CURRENTLY INSIDE.
     if (isCheckedInToday && !isCheckedOutToday) {
-      if (now > todayEnd) {
+      if (!isWithinWindow) {
         return {
           label: "OVERSTAYED TODAY",
           container: "bg-red-100",
           text: "text-red-700",
         };
       }
+
       return {
         label: "INSIDE",
         container: "bg-emerald-100",
@@ -176,7 +203,7 @@ export default function GatePassesView() {
       };
     }
 
-    // 5. DEPARTED TODAY
+    // 5. DEPARTED TODAY.
     if (isCheckedOutToday) {
       return {
         label: "DEPARTED TODAY",
@@ -185,33 +212,56 @@ export default function GatePassesView() {
       };
     }
 
-    // 6. EXPIRED TODAY (Window closed, no check-in occurred)
-    if (!isCheckedInToday && now > todayEnd) {
+    // 6. CHECK THE INVITATION DATE RANGE.
+    if (startDate && todayStr < startDate) {
       return {
-        label: "EXPIRED TODAY",
-        container: "bg-rose-50",
-        text: "text-rose-400",
+        label: "UPCOMING",
+        container: "bg-slate-50",
+        text: "text-slate-400",
       };
     }
 
-    // 7. NOT ARRIVED TODAY (Within daily hours)
-    const startDate = toLocalDateStr(invite.start_date);
-    const endDate = toLocalDateStr(invite.end_date);
+    if (endDate && todayStr > endDate) {
+      return {
+        label: "EXPIRED",
+        container: "bg-rose-50",
+        text: "text-rose-500",
+      };
+    }
 
-    if (startDate && endDate && todayStr >= startDate && todayStr <= endDate) {
-      // If it's too early for the daily window
-      if (now < todayStart) {
-        return {
-          label: "NOT ARRIVED TODAY",
-          container: "bg-slate-100",
-          text: "text-slate-500",
-        };
-      }
-      // If it's currently within the window
+    // 7. READY FOR ENTRY DURING AN OVERNIGHT WINDOW.
+    // For example, 8 PM–6 AM: after midnight, the window
+    // that started yesterday is still active until 6 AM.
+    if (isWithinPreviousOvernightWindow) {
       return {
         label: "READY FOR ENTRY",
         container: "bg-indigo-100",
         text: "text-indigo-700",
+      };
+    }
+
+    // 8. NOT ARRIVED TODAY.
+    if (startDate && endDate && todayStr >= startDate && todayStr <= endDate) {
+      if (isWithinTodayWindow) {
+        return {
+          label: "READY FOR ENTRY",
+          container: "bg-indigo-100",
+          text: "text-indigo-700",
+        };
+      }
+
+      if (now < todayStart) {
+        return {
+          label: "NOT YET READY TODAY",
+          container: "bg-slate-100",
+          text: "text-slate-500",
+        };
+      }
+
+      return {
+        label: "EXPIRED TODAY",
+        container: "bg-rose-50",
+        text: "text-rose-400",
       };
     }
 
@@ -225,9 +275,11 @@ export default function GatePassesView() {
   const getStatusDetails = (
     status: string,
     isExpired: boolean,
-    startDate: string, // Added this parameter
+    startDate: string,
     isCancelled: boolean,
     startTime: string,
+    endDate: string,
+    endTime: string,
   ) => {
     if (isCancelled) {
       return {
@@ -238,11 +290,20 @@ export default function GatePassesView() {
     }
 
     const now = new Date();
-    const start = new Date(startDate);
-    const today = new Date(new Date().setHours(0, 0, 0, 0));
-    const startDay = new Date(start.setHours(0, 0, 0, 0));
 
-    // 1. Check if the invitation hasn't started yet (Future date)
+    const [startYear, startMonth, startDayOfMonth] = startDate
+      .split("T")[0]
+      .split("-")
+      .map(Number);
+
+    const start = new Date(startYear, startMonth - 1, startDayOfMonth);
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const startDay = new Date(
+      start.getFullYear(),
+      start.getMonth(),
+      start.getDate(),
+    );
+
     if (status === "pending" && today < startDay) {
       return {
         label: "UPCOMING",
@@ -251,8 +312,21 @@ export default function GatePassesView() {
       };
     }
 
-    // 2. Check if the invitation is past its end date/time
-    if (status === "pending" && isExpired) {
+    const [endYear, endMonth, endDayOfMonth] = endDate
+      .split("T")[0]
+      .split("-")
+      .map(Number);
+
+    const [endH, endM] = endTime.split(":").map(Number);
+    const overallExpiry = new Date(
+      endYear,
+      endMonth - 1,
+      endDayOfMonth,
+      endH,
+      endM,
+    );
+
+    if (status === "pending" && (isExpired || now >= overallExpiry)) {
       return {
         label: "EXPIRED",
         container: "bg-rose-50",
@@ -260,14 +334,21 @@ export default function GatePassesView() {
       };
     }
 
-    // 3. Logic for "Pending" invites that are valid TODAY
     if (status === "pending") {
-      const [startH, startM] = startTime.split(":");
-      const todayStartTime = new Date();
-      todayStartTime.setHours(parseInt(startH), parseInt(startM), 0, 0);
+      const [startH, startM] = startTime.split(":").map(Number);
+      const todayStartTime = new Date(start);
+      todayStartTime.setHours(startH, startM, 0, 0);
 
-      // If today is the day and current time is >= start time
-      if (now >= todayStartTime) {
+      const todayEndTime = new Date(start);
+      todayEndTime.setHours(endH, endM, 0, 0);
+
+      const isOverNight = todayStartTime > todayEndTime;
+
+      const isWithinWindow = isOverNight
+        ? now >= todayStartTime || now <= todayEndTime
+        : now >= todayStartTime && now <= todayEndTime;
+
+      if (isWithinWindow) {
         return {
           label: "READY FOR ENTRY",
           container: "bg-indigo-100",
@@ -276,13 +357,12 @@ export default function GatePassesView() {
       }
 
       return {
-        label: "NOT ARRIVED",
-        container: "bg-slate-100",
-        text: "text-slate-600",
+        label: now < todayStartTime ? "NOT YET READY" : "EXPIRED",
+        container: now < todayStartTime ? "bg-slate-100" : "bg-rose-50",
+        text: now < todayStartTime ? "text-slate-600" : "text-rose-500",
       };
     }
 
-    // 4. Normal Status Switch for non-pending
     switch (status) {
       case "checked_in":
         return {
@@ -327,7 +407,7 @@ export default function GatePassesView() {
         setScanned(false);
       } else {
         Alert.alert(
-          "Scan Failed", 
+          "Scan Failed",
           res.error || res.message || "Invalid code.",
           [
             {
@@ -466,6 +546,8 @@ export default function GatePassesView() {
           invite.start_date,
           invite.is_cancelled,
           invite.start_time,
+          invite.end_date,
+          invite.end_time,
         );
 
     const canAction =
@@ -1045,7 +1127,9 @@ export default function GatePassesView() {
               }
               ListEmptyComponent={
                 <Text className="text-center text-slate-400 mt-20">
-                 {searchTerm ? "No matching invitations" : "No invitations available"}
+                  {searchTerm
+                    ? "No matching invitations"
+                    : "No invitations available"}
                 </Text>
               }
             />
@@ -1066,6 +1150,8 @@ export default function GatePassesView() {
                   selectedInvite.start_date,
                   selectedInvite.is_cancelled,
                   selectedInvite.start_time,
+                  selectedInvite.end_date,
+                  selectedInvite.end_time,
                 )
             : null
         }

@@ -1,16 +1,16 @@
 import { Briefcase, Home, MapPin, User, X } from "lucide-react-native";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
-    Image,
-    Modal,
-    Pressable,
-    ScrollView,
-    Text,
-    TouchableOpacity,
-    View,
+  Image,
+  Modal,
+  Pressable,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { useUser } from "../../app/UserContext";
-import { formatDate, formatTime } from "../services/api";
+import { formatDate, formatTime, isOvernightSchedule } from "../services/api";
 import { Invitation, LocationPair } from "../services/interfaces";
 
 interface InvitationDetailProps {
@@ -242,16 +242,40 @@ const InvitationDetailModal = ({
                     isCaps
                     isDarkMode={isDarkMode}
                   />
-                  <DetailRow
-                    label="Validity"
-                    value={`${formatDate(invite.start_date)} ${isMultiEntry ? `→ ${formatDate(invite.end_date)}` : ""} ${isStaffEntry && invite.start_date !== invite.end_date ? `→ ${formatDate(invite.end_date)}` : "Present Date"}`}
-                    isDarkMode={isDarkMode}
-                  />
-                  <DetailRow
-                    label="Window"
-                    value={`${formatTime(invite.start_time)} - ${formatTime(invite.end_time)}`}
-                    isDarkMode={isDarkMode}
-                  />
+                  <View className="flex">
+                    <DetailRow
+                      label="Validity"
+                      value={`${formatDate(invite.start_date)} ${isMultiEntry ? `→ ${formatDate(invite.end_date)}` : ""} ${isStaffEntry && invite.start_date !== invite.end_date ? `→ ${formatDate(invite.end_date)}` : ""}`}
+                      isDarkMode={isDarkMode}
+                    />
+                    <View className="flex-row justify-between items-center py-3 border-b border-slate-50">
+                      <Text className="text-slate-400 text-[11px] font-bold uppercase tracking-wider">
+                        Window
+                      </Text>
+                      <View className="flex-row items-center gap-2">
+                        {isOvernightSchedule(
+                          invite.start_time,
+                          invite.end_time,
+                        ) && (
+                          <View
+                            className={`px-2 py-0.5 rounded-md ${isDarkMode ? "bg-indigo-950/40 border border-indigo-900/30" : "bg-indigo-100"}`}
+                          >
+                            <Text
+                              className={`text-[9px] font-extrabold ${isDarkMode ? "text-indigo-400" : "text-indigo-700"}`}
+                            >
+                              OVERNIGHT
+                            </Text>
+                          </View>
+                        )}
+                        <Text
+                          className={`${isDarkMode ? "text-white" : "text-slate-800"} font-bold text-xs`}
+                        >
+                          {formatTime(invite.start_time)} -{" "}
+                          {formatTime(invite.end_time)}
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
                 </View>
 
                 <TouchableOpacity

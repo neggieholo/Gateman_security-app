@@ -231,3 +231,9 @@ export interface ProjectionShift {
   end_time: string;
   assigned_guard_ids: string[];
 }
+
+export interface sessionResponse {
+  success: boolean;
+  user: SecurityUser | null;
+  isShiftExpired: boolean;
+}

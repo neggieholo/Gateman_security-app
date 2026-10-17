@@ -16,7 +16,7 @@ import { useUser } from "../UserContext";
 
 
 export default function SecurityTabsLayout() {
-  const { user, setUser, setSessionId, socket, badgeCount } = useUser();
+  const { user, setUser, setSessionId, socket, badgeCount, setIsShiftExpired } = useUser();
   const [loggingOut, setLoggingOut] = useState(false);
   const router = useRouter();
 
@@ -41,6 +41,7 @@ export default function SecurityTabsLayout() {
 
       setTimeout(() => {
         if (setSessionId) setSessionId("");
+        setIsShiftExpired(false);
         setUser(null);
       }, 100);
     } catch (e) {

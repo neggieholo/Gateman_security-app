@@ -2,7 +2,7 @@
 import { ExpiredSubscriptionModal } from "@/Components/ExpiredSubscriptionModal";
 import { NoModuleAccessModal } from "@/Components/NoModuleAccessModal";
 import * as Notifications from "expo-notifications";
-import { router } from "expo-router";
+import { router, usePathname } from "expo-router";
 import React, {
   createContext,
   ReactNode,
@@ -11,10 +11,17 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { Alert, Platform, useColorScheme } from "react-native";
+import {
+  Alert,
+  AppState,
+  AppStateStatus,
+  Platform,
+  useColorScheme,
+} from "react-native";
 import { io, Socket } from "socket.io-client";
 import { Colors } from "../constants/Colors";
 import {
+  checkSession,
   fetchNotifications,
   getMyApplicationStatus,
 } from "../src/services/api";
@@ -48,10 +55,10 @@ interface UserContextType {
   setIsDarkMode: (value: boolean) => void;
   theme: Theme;
   sendLocation: (location: LocationState) => void;
-  showBiometricBtn: boolean; 
-  setShowBiometricBtn:(value: boolean) => void;
-  isShiftExpired: boolean; 
-  setIsShiftExpired:(value: boolean) => void;
+  showBiometricBtn: boolean;
+  setShowBiometricBtn: (value: boolean) => void;
+  isShiftExpired: boolean;
+  setIsShiftExpired: (value: boolean) => void;
 }
 
 export const UserContext = createContext<UserContextType>({
@@ -75,9 +82,9 @@ export const UserContext = createContext<UserContextType>({
   setIsDarkMode: () => {},
   theme: Colors.light,
   sendLocation: () => {},
-  showBiometricBtn: false, 
+  showBiometricBtn: false,
   setShowBiometricBtn: () => {},
-  isShiftExpired: false, 
+  isShiftExpired: false,
   setIsShiftExpired: () => {},
 });
 
@@ -101,6 +108,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [showBiometricBtn, setShowBiometricBtn] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(systemColorScheme === "dark");
   const [isShiftExpired, setIsShiftExpired] = useState(false);
+  const isShiftExpiredRef = useRef<boolean>(false);
 
   const estate = useMemo(() => user?.estate, [user?.estate]);
 
@@ -145,6 +153,88 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   }, [systemColorScheme]);
 
   const theme = isDarkMode ? Colors.dark : Colors.light;
+
+  const pathname = usePathname();
+
+  const verifySession = async () => {
+    if (!user || pathname === "/") return;
+
+    try {
+      const res = await checkSession();
+
+      if (res && res.success) {
+        // Only trigger state update if the expired flag has changed (e.g. false -> true)
+        if (
+          typeof res.isShiftExpired === "boolean" &&
+          res.isShiftExpired !== isShiftExpiredRef.current
+        ) {
+          setIsShiftExpired(res.isShiftExpired);
+        }
+      } else {
+        console.warn("Session check returned invalid/unauthorized.");
+        handleSessionExpiration();
+      }
+    } catch (err) {
+      console.error("Session check network error:", err);
+    }
+  };
+
+  // Redirection Handler
+  const handleSessionExpiration = () => {
+    setIsShiftExpired(false);
+
+    if (pathname !== "/") {
+      Alert.alert(
+        "Session Expired",
+        "Your session has ended. Please sign in again.",
+        [
+          {
+            text: "OK",
+            onPress: () => {
+              router.replace("/");
+              setUser(null);
+            },
+          },
+        ],
+      );
+    }
+  };
+
+  useEffect(() => {
+    isShiftExpiredRef.current = isShiftExpired;
+  }, [isShiftExpired]);
+
+  // 1. Session check on App Focus (Foreground transition)
+  useEffect(() => {
+    const handleAppStateChange = (nextAppState: AppStateStatus) => {
+      if (nextAppState === "active" && user && pathname !== "/") {
+        verifySession();
+      }
+    };
+
+    const subscription = AppState.addEventListener(
+      "change",
+      handleAppStateChange,
+    );
+
+    return () => {
+      subscription.remove();
+    };
+  }, [user, pathname]);
+
+  // 2. Periodic Session check every 10 minutes
+  useEffect(() => {
+    if (!user || pathname === "/") return;
+
+    const intervalId = setInterval(
+      () => {
+        verifySession();
+      },
+      10 * 60 * 1000,
+    );
+
+    return () => clearInterval(intervalId);
+  }, [user, pathname]);
 
   useEffect(() => {
     if (!sessionId) {

@@ -2,7 +2,7 @@
   "expo": {
     "name": "GM Security",
     "slug": "gateman_security",
-    "version": "1.2.3",
+    "version": "1.2.5",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "gatemansecurity",

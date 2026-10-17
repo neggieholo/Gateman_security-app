@@ -9,10 +9,27 @@ import {
   Invitation,
   LocationState,
   ProjectionShift,
+  sessionResponse,
   tempNotification,
 } from "./interfaces";
 
 const BASE_URL = `${process.env.EXPO_PUBLIC_BASE_URL}/api`;
+
+export const checkSession = async (): Promise<sessionResponse> => {
+  try {
+    const response = await fetch(`${BASE_URL}/session-check`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+    });
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("❌ Session Check Error:", error);
+    return { success: false, user: null, isShiftExpired: false };
+  }
+};
 
 export const registerSecurity = async (
   name: string,
@@ -753,4 +770,19 @@ export const getMySchedule = async (): Promise<{
       message: "Network error while fetching schedules",
     };
   }
+};
+
+export const isOvernightSchedule = (
+  startTimeStr?: string,
+  endTimeStr?: string,
+): boolean => {
+  if (!startTimeStr || !endTimeStr) return false;
+
+  const [startH, startM] = startTimeStr.split(":").map(Number);
+  const [endH, endM] = endTimeStr.split(":").map(Number);
+
+  const startVal = startH * 60 + startM;
+  const endVal = endH * 60 + endM;
+
+  return endVal < startVal;
 };
