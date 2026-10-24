@@ -91,13 +91,24 @@ export default function GatePassesView() {
   };
 
   const isPastTime = (endDate: string, endTime: string) => {
-    const [hours, minutes] = endTime.split(":");
-    const expiry = new Date(endDate);
-    expiry.setHours(parseInt(hours), parseInt(minutes), 0);
-    return new Date() > expiry;
+    if (!endDate || !endTime) return false;
+
+    const expiryDate = new Date(endDate);
+    const [hours, minutes] = endTime.split(":").map(Number);
+
+    const expiry = new Date(
+      expiryDate.getFullYear(),
+      expiryDate.getMonth(),
+      expiryDate.getDate(),
+      hours,
+      minutes,
+      0,
+      0,
+    );
+
+    return new Date() >= expiry;
   };
 
-  // Status Logic Helper
   const getMultiEntryStatus = (invite: Invitation) => {
     const isOverNight = isOvernightSchedule(invite.start_time, invite.end_time);
 
@@ -134,8 +145,17 @@ export default function GatePassesView() {
     todayEnd.setHours(endH, endM, 0, 0);
 
     // 1. GLOBAL EXPIRY: end_date + end_time is the exact final expiry.
-    const overallExpiry = new Date(invite.end_date);
-    overallExpiry.setHours(endH, endM, 0, 0);
+    const expiryDate = new Date(invite.end_date);
+
+    const overallExpiry = new Date(
+      expiryDate.getFullYear(),
+      expiryDate.getMonth(),
+      expiryDate.getDate(),
+      endH,
+      endM,
+      0,
+      0,
+    );
 
     if (now >= overallExpiry) {
       return {
@@ -291,13 +311,10 @@ export default function GatePassesView() {
 
     const now = new Date();
 
-    const [startYear, startMonth, startDayOfMonth] = startDate
-      .split("T")[0]
-      .split("-")
-      .map(Number);
+    const start = new Date(startDate);
 
-    const start = new Date(startYear, startMonth - 1, startDayOfMonth);
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
     const startDay = new Date(
       start.getFullYear(),
       start.getMonth(),
@@ -312,21 +329,25 @@ export default function GatePassesView() {
       };
     }
 
-    const [endYear, endMonth, endDayOfMonth] = endDate
-      .split("T")[0]
-      .split("-")
-      .map(Number);
-
     const [endH, endM] = endTime.split(":").map(Number);
-    const overallExpiry = new Date(
-      endYear,
-      endMonth - 1,
-      endDayOfMonth,
-      endH,
-      endM,
-    );
+    const expiryDate = endDate ? new Date(endDate) : null;
 
-    if (status === "pending" && (isExpired || now >= overallExpiry)) {
+    const overallExpiry = expiryDate
+      ? new Date(
+          expiryDate.getFullYear(),
+          expiryDate.getMonth(),
+          expiryDate.getDate(),
+          endH,
+          endM,
+          0,
+          0,
+        )
+      : null;
+
+    if (
+      status === "pending" &&
+      (isExpired || (overallExpiry && now >= overallExpiry))
+    ) {
       return {
         label: "EXPIRED",
         container: "bg-rose-50",
@@ -810,7 +831,7 @@ export default function GatePassesView() {
   if (!user?.is_on_duty) {
     return (
       <View
-        className={`flex-1 justify-center items-center p-6 ${isDarkMode ? "bg-gm-navy/20" : "bg-gray-50 "}`}
+        className={`flex-1 justify-center items-center p-6 ${isDarkMode ? "bg-slate-950" : "bg-gray-50 "}`}
       >
         <View
           className={`${isDarkMode ? "bg-gm-navy" : "bg-white "} p-8 rounded-[40px] shadow-xl items-center border border-slate-100 w-full max-w-sm`}

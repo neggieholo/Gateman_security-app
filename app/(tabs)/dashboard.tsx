@@ -467,7 +467,6 @@ export default function SecurityDashboard() {
       </View>
 
       {/* SECTION 2: SHIFT MANAGEMENT */}
-      {/* SECTION 2: SHIFT MANAGEMENT */}
       <View className="mb-8 flex-1 justify-center">
         <Text
           className={`text-lg font-oswald-semibold ${isDarkMode ? "text-gray-300" : "text-gm-navy"}`}
